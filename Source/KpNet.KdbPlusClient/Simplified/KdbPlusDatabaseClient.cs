@@ -1,41 +1,63 @@
 ﻿using System;
 using System.Collections;
-using System.Data;
+using System.Data.Common;
+using System.Globalization;
 using System.Text;
 using Kdbplus;
 
 namespace KpNet.KdbPlusClient
 {
     /// <summary>
-    /// Implementation class for kdb+ related operations.
+    /// Client implementation for kdb+ related operations.
     /// </summary>
-    public sealed class KdbDatabaseConnection : IDatabaseConnection
+    public sealed class KdbPlusDatabaseClient : IDatabaseClient
     {
+        private const int DefaultBufferSize = 16384;
         private readonly c _client;
         private TimeSpan _receiveTimeout = TimeSpan.FromMinutes(1);
         private TimeSpan _sendTimeout = TimeSpan.FromMinutes(1);
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="KdbDatabaseConnection"/> class.
+        /// Initializes a new instance of the <see cref="KdbPlusDatabaseClient"/> class.
         /// </summary>
-        /// <param name="host">The host.</param>
+        /// <param name="server">The server.</param>
         /// <param name="port">The port.</param>
-        public KdbDatabaseConnection(string host, int port)
+        public KdbPlusDatabaseClient(string server, int port) : this(server, port, null, null, DefaultBufferSize)
         {
-            Guard.ThrowIfNullOrEmpty(host, "host");
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KdbPlusDatabaseClient"/> class.
+        /// </summary>
+        /// <param name="server">The server.</param>
+        /// <param name="port">The port.</param>
+        /// <param name="userId">The user name.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="bufferSize">The buffer size.</param>
+        public KdbPlusDatabaseClient(string server, int port, string userId, string password, int bufferSize)
+        {
+            c.e = Encoding.UTF8;
             
+            Guard.ThrowIfNullOrEmpty(server, "server");
+
             if (port <= 0)
                 throw new ArgumentException(String.Concat("Invalid port:", port));
 
-            _client = new c(host, port)
+            try
+            {
+                _client = new c(server, port, FormatUserName(userId, password), bufferSize)
                           {
                               SendTimeout = ToMilliSeconds(_sendTimeout),
                               ReceiveTimeout = ToMilliSeconds(_receiveTimeout)
                           };
-            c.e = Encoding.UTF8;
+            }
+            catch (Exception ex)
+            {
+                throw new KdbPlusException("Failed to connect to server.", ex);
+            }
         }
 
-        #region IDatabaseConnection Members
+        #region IDatabaseClient Members
 
         /// <summary>
         /// Executes the query that returns scalar value.
@@ -100,15 +122,15 @@ namespace KpNet.KdbPlusClient
 
             object queryResult = DoNativeQuery(query);
 
-            return new KdbMultipleResult((c.Dict)queryResult);
-        }        
+            return new KdbMultipleResult((c.Dict) queryResult);
+        }
 
         /// <summary>
         /// Executes the query and returns the result.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns></returns>
-        public IDataReader ExecuteQuery(string query)
+        public DbDataReader ExecuteQuery(string query)
         {
             Guard.ThrowIfNullOrEmpty(query, "query");
 
@@ -158,10 +180,10 @@ namespace KpNet.KdbPlusClient
             try
             {
                 return _client.k(query);
-            }            
+            }
             catch (Exception exc)
             {
-                throw new DatabaseException("Query failed.", query, exc);
+                throw new KdbPlusException("Query execution exception.", query, exc);
             }
         }
 
@@ -176,6 +198,11 @@ namespace KpNet.KdbPlusClient
         private static int ToMilliSeconds(TimeSpan interval)
         {
             return Convert.ToInt32(interval.TotalMilliseconds);
-        }        
+        }
+
+        private static string FormatUserName(string userName, string password)
+        {
+            return String.Format(CultureInfo.InvariantCulture, "{0}:{1}", userName, password);
+        }
     }
 }

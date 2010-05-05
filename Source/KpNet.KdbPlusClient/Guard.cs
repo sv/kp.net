@@ -5,7 +5,7 @@ namespace KpNet.KdbPlusClient
     /// <summary>
     /// This class provides checking input parameter values for null or empty values. 
     /// </summary>
-    public static class Guard
+    internal static class Guard
     {
         private const string ValueIsNullOrEmpty = "Provided argument value is null or empty.";
 

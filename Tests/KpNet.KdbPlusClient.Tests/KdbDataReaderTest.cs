@@ -1,15 +1,39 @@
 ﻿using System;
-using System.Data;
+using Kdbplus;
 using NUnit.Framework;
-using Flip = Kdbplus.c.Flip;
-using Dict = Kdbplus.c.Dict;
 
 namespace KpNet.KdbPlusClient.Tests
 {
     [TestFixture]
     public sealed class KdbDataReaderTest
     {
-        private static readonly Flip _result = new Flip(new Dict(new string[] { "id", "name" }, new object[] { new int[] { 1, 2, 3 }, new string[] { "sasha", "masha", "zina" } }));
+        private static readonly c.Flip _result =
+            new c.Flip(new c.Dict(new[] {"id", "name"}, new object[] {new[] {1, 2, 3}, new[] {"sasha", "masha", "zina"}}));
+
+        private static KdbDataReader GetReader()
+        {
+            return new KdbDataReader(_result);
+        }
+
+        [Test]
+        [ExpectedException(typeof (ObjectDisposedException))]
+        public void CannotReadAfterDisposeTest()
+        {
+            KdbDataReader reader = GetReader();
+            reader.Dispose();
+
+            reader.GetInt32(0);
+        }
+
+        [Test]
+        [ExpectedException(typeof (ObjectDisposedException))]
+        public void CannotReadAfterEndTest()
+        {
+            KdbDataReader reader = GetReader();
+            while (reader.Read()) ;
+
+            reader.GetInt32(0);
+        }
 
         [Test]
         public void ColumnAndRowCountTest()
@@ -57,24 +81,53 @@ namespace KpNet.KdbPlusClient.Tests
         }
 
         [Test]
+        public void RowsetGetValuesTest()
+        {
+            KdbDataReader reader = GetReader();
+
+            Assert.AreEqual(true, reader.Read());
+
+            var values = new object[2];
+
+            reader.GetValues(values);
+
+            Assert.AreEqual(1, Int32.Parse(values[0].ToString()));
+            Assert.AreEqual("sasha", values[1].ToString());
+
+            Assert.AreEqual(true, reader.Read());
+            reader.GetValues(values);
+
+            Assert.AreEqual(2, Int32.Parse(values[0].ToString()));
+            Assert.AreEqual("masha", values[1].ToString());
+
+            Assert.AreEqual(true, reader.Read());
+            reader.GetValues(values);
+
+            Assert.AreEqual(3, Int32.Parse(values[0].ToString()));
+            Assert.AreEqual("zina", values[1].ToString());
+
+            Assert.AreEqual(false, reader.Read());
+        }
+
+        [Test]
         public void RowsetNameIndexerTest()
         {
             KdbDataReader reader = GetReader();
 
             Assert.AreEqual(true, reader.Read());
 
-            Assert.AreEqual(1, Int32.Parse(((IDataRecord)reader)["id"].ToString()));
-            Assert.AreEqual("sasha", ((IDataRecord)reader)["name"].ToString());
+            Assert.AreEqual(1, Int32.Parse(reader["id"].ToString()));
+            Assert.AreEqual("sasha", reader["name"].ToString());
 
             Assert.AreEqual(true, reader.Read());
 
-            Assert.AreEqual(2, Int32.Parse(((IDataRecord)reader)["id"].ToString()));
-            Assert.AreEqual("masha", ((IDataRecord)reader)["name"].ToString());
+            Assert.AreEqual(2, Int32.Parse(reader["id"].ToString()));
+            Assert.AreEqual("masha", reader["name"].ToString());
 
             Assert.AreEqual(true, reader.Read());
 
-            Assert.AreEqual(3, Int32.Parse(((IDataRecord)reader)["id"].ToString()));
-            Assert.AreEqual("zina", ((IDataRecord)reader)["name"].ToString());
+            Assert.AreEqual(3, Int32.Parse((reader)["id"].ToString()));
+            Assert.AreEqual("zina", (reader)["name"].ToString());
 
             Assert.AreEqual(false, reader.Read());
         }
@@ -86,18 +139,18 @@ namespace KpNet.KdbPlusClient.Tests
 
             Assert.AreEqual(true, reader.Read());
 
-            Assert.AreEqual(1, Int32.Parse(((IDataRecord)reader)[0].ToString()));
-            Assert.AreEqual("sasha", ((IDataRecord)reader)[1].ToString());
+            Assert.AreEqual(1, Int32.Parse((reader)[0].ToString()));
+            Assert.AreEqual("sasha", (reader)[1].ToString());
 
             Assert.AreEqual(true, reader.Read());
 
-            Assert.AreEqual(2, Int32.Parse(((IDataRecord)reader)[0].ToString()));
-            Assert.AreEqual("masha", ((IDataRecord)reader)[1].ToString());
+            Assert.AreEqual(2, Int32.Parse((reader)[0].ToString()));
+            Assert.AreEqual("masha", (reader)[1].ToString());
 
             Assert.AreEqual(true, reader.Read());
 
-            Assert.AreEqual(3, Int32.Parse(((IDataRecord)reader)[0].ToString()));
-            Assert.AreEqual("zina", ((IDataRecord)reader)[1].ToString());
+            Assert.AreEqual(3, Int32.Parse((reader)[0].ToString()));
+            Assert.AreEqual("zina", (reader)[1].ToString());
 
             Assert.AreEqual(false, reader.Read());
         }
@@ -123,60 +176,6 @@ namespace KpNet.KdbPlusClient.Tests
             Assert.AreEqual("zina", reader.GetString(1));
 
             Assert.AreEqual(false, reader.Read());
-        }
-
-        [Test]
-        public void RowsetGetValuesTest()
-        {
-            KdbDataReader reader = GetReader();
-
-            Assert.AreEqual(true, reader.Read());
-
-            object[] values = new object[2];
-
-            reader.GetValues(values);
-
-            Assert.AreEqual(1, Int32.Parse(values[0].ToString()));
-            Assert.AreEqual("sasha", values[1].ToString());
-
-            Assert.AreEqual(true, reader.Read());
-            reader.GetValues(values);
-
-            Assert.AreEqual(2, Int32.Parse(values[0].ToString()));
-            Assert.AreEqual("masha", values[1].ToString());
-
-            Assert.AreEqual(true, reader.Read());
-            reader.GetValues(values);
-
-            Assert.AreEqual(3, Int32.Parse(values[0].ToString()));
-            Assert.AreEqual("zina", values[1].ToString());
-
-            Assert.AreEqual(false, reader.Read());
-        }
-
-        [Test]
-        [ExpectedException(typeof(ObjectDisposedException))]
-        public void CannotReadAfterEndTest()
-        {
-            KdbDataReader reader = GetReader();
-            while (reader.Read());
-
-            reader.GetInt32(0);
-        }
-
-        [Test]
-        [ExpectedException(typeof(ObjectDisposedException))]
-        public void CannotReadAfterDisposeTest()
-        {
-            KdbDataReader reader = GetReader();
-            reader.Dispose();
-
-            reader.GetInt32(0);
-        }
-
-        private static KdbDataReader GetReader()
-        {
-            return new KdbDataReader(_result);
         }
     }
 }

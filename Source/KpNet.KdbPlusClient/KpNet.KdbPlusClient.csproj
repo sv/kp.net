@@ -104,15 +104,33 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DatabaseException.cs" />
-    <Compile Include="DataReaderCollection.cs" />
+    <Compile Include="Simplified\DataReaderCollection.cs" />
     <Compile Include="Guard.cs" />
-    <Compile Include="IDatabaseConnection.cs" />
-    <Compile Include="IMultipleResult.cs" />
-    <Compile Include="KdbDatabaseConnection.cs" />
+    <Compile Include="Simplified\IDatabaseClient.cs" />
+    <Compile Include="Simplified\IMultipleResult.cs" />
+    <Compile Include="Simplified\KdbPlusDatabaseClient.cs" />
     <Compile Include="KdbDataReader.cs" />
-    <Compile Include="KdbMultipleResult.cs" />
+    <Compile Include="Simplified\KdbMultipleResult.cs" />
+    <Compile Include="KdbPlusCommand.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="KdbPlusConnection.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="KdbPlusConnectionStringBuilder.cs" />
+    <Compile Include="KdbPlusException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

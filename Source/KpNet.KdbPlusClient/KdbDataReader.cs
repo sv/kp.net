@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Data;
+using System.Data.Common;
 using System.Globalization;
 using Kdbplus;
 
@@ -8,7 +10,7 @@ namespace KpNet.KdbPlusClient
     /// <summary>
     /// Reader implementation for kdb+ result set.
     /// </summary>
-    internal sealed class KdbDataReader : IDataReader
+    internal sealed class KdbDataReader : DbDataReader
     {
         private static readonly CultureInfo DefaultCulture = CultureInfo.InvariantCulture;
         private readonly c.Flip _result;
@@ -32,22 +34,27 @@ namespace KpNet.KdbPlusClient
 
         #region IDataReader Members
 
-        public bool IsClosed
+        public override bool HasRows
+        {
+            get { return _rowCount > 0; }
+        }
+
+        public override bool IsClosed
         {
             get { return _isDisposed; }
         }
 
-        public int FieldCount
+        public override int FieldCount
         {
             get { return _columnCount; }
         }
 
-        public object this[int i]
+        public override object this[int i]
         {
             get { return GetValue(i); }
         }
 
-        public object this[string name]
+        public override object this[string name]
         {
             get
             {
@@ -62,7 +69,7 @@ namespace KpNet.KdbPlusClient
             }
         }
 
-        public bool Read()
+        public override bool Read()
         {
             ThrowIfDisposed();
 
@@ -77,7 +84,7 @@ namespace KpNet.KdbPlusClient
             return result;
         }
 
-        public string GetName(int i)
+        public override string GetName(int i)
         {
             ThrowIfDisposed();
 
@@ -86,12 +93,12 @@ namespace KpNet.KdbPlusClient
             return _result.x[i];
         }
 
-        public object GetValue(int i)
+        public override object GetValue(int i)
         {
             return GetCurrentRowValue(i);
         }
 
-        public int GetValues(object[] values)
+        public override int GetValues(object[] values)
         {
             if (values == null || values.Length < _columnCount)
                 throw new ArgumentException("Values parameter is incorrect.", "values");
@@ -105,96 +112,101 @@ namespace KpNet.KdbPlusClient
             return minVal;
         }
 
-        public int GetInt32(int i)
+        public override int GetInt32(int i)
         {
             ThrowIfDisposed();
 
             return (int)GetValue(i);
         }
 
-        public long GetInt64(int i)
+        public override long GetInt64(int i)
         {
             ThrowIfDisposed();
 
             return (Int64) Convert.ChangeType(GetValue(i), typeof (Int64), DefaultCulture);
         }
 
-        public string GetString(int i)
+        public override string GetString(int i)
         {
             return Convert.ToString(GetValue(i), DefaultCulture);
         }
 
-        public void Close()
+        public override void Close()
         {
             _isDisposed = true;
         }
 
-        public int GetOrdinal(string name)
+        public override int GetOrdinal(string name)
         {
             throw new NotImplementedException();
         }
 
-        public bool GetBoolean(int i)
+        public override bool GetBoolean(int i)
         {
             throw new NotImplementedException();
         }
 
-        public byte GetByte(int i)
+        public override byte GetByte(int i)
         {
             throw new NotImplementedException();
         }
 
-        public string GetDataTypeName(int i)
+        public override string GetDataTypeName(int i)
         {
             throw new NotImplementedException();
         }
 
-        public Type GetFieldType(int i)
+        public override IEnumerator GetEnumerator()
         {
             throw new NotImplementedException();
         }
 
-        public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
+        public override Type GetFieldType(int i)
         {
             throw new NotImplementedException();
         }
 
-        public char GetChar(int i)
+        public override long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
         {
             throw new NotImplementedException();
         }
 
-        public long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
+        public override char GetChar(int i)
         {
             throw new NotImplementedException();
         }
 
-        public Guid GetGuid(int i)
+        public override long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
         {
             throw new NotImplementedException();
         }
 
-        public short GetInt16(int i)
+        public override Guid GetGuid(int i)
         {
             throw new NotImplementedException();
         }
 
-        public float GetFloat(int i)
+        public override short GetInt16(int i)
         {
             throw new NotImplementedException();
         }
 
-        public double GetDouble(int i)
+        public override float GetFloat(int i)
         {
             throw new NotImplementedException();
         }
 
-        public decimal GetDecimal(int i)
+        public override double GetDouble(int i)
         {
             throw new NotImplementedException();
         }
 
-        public DateTime GetDateTime(int i)
+        public override decimal GetDecimal(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override DateTime GetDateTime(int i)
         {
             throw new NotImplementedException();
         }
@@ -204,27 +216,27 @@ namespace KpNet.KdbPlusClient
             throw new NotImplementedException();
         }
 
-        public bool IsDBNull(int i)
+        public override bool IsDBNull(int i)
         {
             throw new NotImplementedException();
         }
 
-        public DataTable GetSchemaTable()
+        public override DataTable GetSchemaTable()
         {
             throw new NotImplementedException();
         }
 
-        public bool NextResult()
+        public override bool NextResult()
         {
             throw new NotImplementedException();
         }
 
-        public int Depth
+        public override int Depth
         {
             get { throw new NotImplementedException(); }
         }
 
-        public int RecordsAffected
+        public override int RecordsAffected
         {
             get { throw new NotImplementedException(); }
         }
@@ -275,7 +287,7 @@ namespace KpNet.KdbPlusClient
         /// Creates the empty reader.
         /// </summary>
         /// <returns></returns>
-        internal static IDataReader CreateEmptyReader()
+        internal static DbDataReader CreateEmptyReader()
         {
             return CreateReaderFromPrimitive(null);
         }
@@ -285,25 +297,13 @@ namespace KpNet.KdbPlusClient
         /// </summary>
         /// <param name="result">The result.</param>
         /// <returns></returns>
-        internal static IDataReader CreateReaderFromPrimitive(object result)
+        internal static DbDataReader CreateReaderFromPrimitive(object result)
         {
             c.Dict d = new c.Dict(new[] {"Result"}, new object[] {new[] {result}});
             return new KdbDataReader(new c.Flip(d));
         }
 
-        #region IDisposable implementation
-
-        public void Dispose()
-        {
-            if (!_isDisposed)
-            {
-                Close();
-            }
-        }
-
-        #endregion
-
-        public static IDataReader CreateReaderFromCollection(object result)
+        public static DbDataReader CreateReaderFromCollection(object result)
         {
             c.Dict d = new c.Dict(new[] {"Result"}, new[] {result});
             return new KdbDataReader(new c.Flip(d));

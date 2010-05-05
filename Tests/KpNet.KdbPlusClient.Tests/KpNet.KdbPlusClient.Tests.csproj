@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="KdbDataReaderTest.cs" />
     <Compile Include="KdbMultipleResultTest.cs" />
+    <Compile Include="KdbPlusConnectionStringBuilderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

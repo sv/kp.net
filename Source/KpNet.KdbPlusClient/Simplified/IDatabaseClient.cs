@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Data;
+using System.Data.Common;
 
 namespace KpNet.KdbPlusClient
 {
     /// <summary>
     /// Contract for database interactions.
     /// </summary>
-    public interface IDatabaseConnection : IDisposable
+    public interface IDatabaseClient : IDisposable
     {
         /// <summary>
         /// Gets or sets the send timeout.
@@ -25,7 +25,7 @@ namespace KpNet.KdbPlusClient
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns></returns>
-        IDataReader ExecuteQuery(string query);
+        DbDataReader ExecuteQuery(string query);
 
         /// <summary>
         /// Executes the instruction that does not return results.
