@@ -10,16 +10,16 @@ namespace KpNet.KdbPlusClient.Tests
         private static readonly c.Flip _result =
             new c.Flip(new c.Dict(new[] {"id", "name"}, new object[] {new[] {1, 2, 3}, new[] {"sasha", "masha", "zina"}}));
 
-        private static KdbDataReader GetReader()
+        private static KdbPlusDataReader GetReader()
         {
-            return new KdbDataReader(_result);
+            return new KdbPlusDataReader(_result);
         }
 
         [Test]
         [ExpectedException(typeof (ObjectDisposedException))]
         public void CannotReadAfterDisposeTest()
         {
-            KdbDataReader reader = GetReader();
+            KdbPlusDataReader reader = GetReader();
             reader.Dispose();
 
             reader.GetInt32(0);
@@ -29,7 +29,7 @@ namespace KpNet.KdbPlusClient.Tests
         [ExpectedException(typeof (ObjectDisposedException))]
         public void CannotReadAfterEndTest()
         {
-            KdbDataReader reader = GetReader();
+            KdbPlusDataReader reader = GetReader();
             while (reader.Read()) ;
 
             reader.GetInt32(0);
@@ -38,7 +38,7 @@ namespace KpNet.KdbPlusClient.Tests
         [Test]
         public void ColumnAndRowCountTest()
         {
-            KdbDataReader reader = GetReader();
+            KdbPlusDataReader reader = GetReader();
             Assert.AreEqual(2, reader.FieldCount);
 
             int rows = 0;
@@ -52,7 +52,7 @@ namespace KpNet.KdbPlusClient.Tests
         [Test]
         public void ColumnNamesTest()
         {
-            KdbDataReader reader = GetReader();
+            KdbPlusDataReader reader = GetReader();
             Assert.AreEqual("id", reader.GetName(0));
             Assert.AreEqual("name", reader.GetName(1));
         }
@@ -60,7 +60,7 @@ namespace KpNet.KdbPlusClient.Tests
         [Test]
         public void RowsetGetValueTest()
         {
-            KdbDataReader reader = GetReader();
+            KdbPlusDataReader reader = GetReader();
 
             Assert.AreEqual(true, reader.Read());
 
@@ -83,7 +83,7 @@ namespace KpNet.KdbPlusClient.Tests
         [Test]
         public void RowsetGetValuesTest()
         {
-            KdbDataReader reader = GetReader();
+            KdbPlusDataReader reader = GetReader();
 
             Assert.AreEqual(true, reader.Read());
 
@@ -112,7 +112,7 @@ namespace KpNet.KdbPlusClient.Tests
         [Test]
         public void RowsetNameIndexerTest()
         {
-            KdbDataReader reader = GetReader();
+            KdbPlusDataReader reader = GetReader();
 
             Assert.AreEqual(true, reader.Read());
 
@@ -135,7 +135,7 @@ namespace KpNet.KdbPlusClient.Tests
         [Test]
         public void RowsetNumberIndexerTest()
         {
-            KdbDataReader reader = GetReader();
+            KdbPlusDataReader reader = GetReader();
 
             Assert.AreEqual(true, reader.Read());
 
@@ -158,7 +158,7 @@ namespace KpNet.KdbPlusClient.Tests
         [Test]
         public void RowsetSpecificGetMethodsTest()
         {
-            KdbDataReader reader = GetReader();
+            KdbPlusDataReader reader = GetReader();
 
             Assert.AreEqual(true, reader.Read());
 

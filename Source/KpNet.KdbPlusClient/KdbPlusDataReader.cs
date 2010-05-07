@@ -10,7 +10,7 @@ namespace KpNet.KdbPlusClient
     /// <summary>
     /// Reader implementation for kdb+ result set.
     /// </summary>
-    internal sealed class KdbDataReader : DbDataReader
+    internal sealed class KdbPlusDataReader : DbDataReader
     {
         private static readonly CultureInfo DefaultCulture = CultureInfo.InvariantCulture;
         private readonly c.Flip _result;
@@ -23,7 +23,7 @@ namespace KpNet.KdbPlusClient
         /// Initializes a new instance of the <see cref="KdbDataReader"/> class.
         /// </summary>
         /// <param name="result">The original kdb+ query result.</param>
-        public KdbDataReader(c.Flip result)
+        public KdbPlusDataReader(c.Flip result)
         {
             Guard.ThrowIfNull(result, "result");
 
@@ -31,8 +31,6 @@ namespace KpNet.KdbPlusClient
 
             InitIndexes();
         }
-
-        #region IDataReader Members
 
         public override bool HasRows
         {
@@ -67,6 +65,16 @@ namespace KpNet.KdbPlusClient
                 }
                 return (this)[index];
             }
+        }
+
+        public override int Depth
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override int RecordsAffected
+        {
+            get { throw new NotImplementedException(); }
         }
 
         public override bool Read()
@@ -116,7 +124,7 @@ namespace KpNet.KdbPlusClient
         {
             ThrowIfDisposed();
 
-            return (int)GetValue(i);
+            return (int) GetValue(i);
         }
 
         public override long GetInt64(int i)
@@ -138,17 +146,23 @@ namespace KpNet.KdbPlusClient
 
         public override int GetOrdinal(string name)
         {
-            throw new NotImplementedException();
+            ThrowIfDisposed();
+
+            return GetIndexByName(name);
         }
 
         public override bool GetBoolean(int i)
         {
-            throw new NotImplementedException();
+            ThrowIfDisposed();
+
+            return (bool) GetValue(i);
         }
 
         public override byte GetByte(int i)
         {
-            throw new NotImplementedException();
+            ThrowIfDisposed();
+
+            return (byte) GetValue(i);
         }
 
         public override string GetDataTypeName(int i)
@@ -173,7 +187,9 @@ namespace KpNet.KdbPlusClient
 
         public override char GetChar(int i)
         {
-            throw new NotImplementedException();
+            ThrowIfDisposed();
+
+            return (char) GetValue(i);
         }
 
         public override long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
@@ -183,32 +199,36 @@ namespace KpNet.KdbPlusClient
 
         public override Guid GetGuid(int i)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException(Resources.NotSupportedInKDBPlus);
         }
 
         public override short GetInt16(int i)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException(Resources.NotSupportedInKDBPlus);
         }
 
         public override float GetFloat(int i)
         {
-            throw new NotImplementedException();
+            ThrowIfDisposed();
+
+            return (float) GetValue(i);
         }
 
         public override double GetDouble(int i)
         {
-            throw new NotImplementedException();
+            ThrowIfDisposed();
+
+            return (double) GetValue(i);
         }
 
         public override decimal GetDecimal(int i)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException(Resources.NotSupportedInKDBPlus);
         }
 
         public override DateTime GetDateTime(int i)
         {
-            throw new NotImplementedException();
+            return (DateTime) GetValue(i);
         }
 
         public IDataReader GetData(int i)
@@ -218,7 +238,9 @@ namespace KpNet.KdbPlusClient
 
         public override bool IsDBNull(int i)
         {
-            throw new NotImplementedException();
+            ThrowIfDisposed();
+
+            return GetValue(i) == null;
         }
 
         public override DataTable GetSchemaTable()
@@ -231,22 +253,10 @@ namespace KpNet.KdbPlusClient
             throw new NotImplementedException();
         }
 
-        public override int Depth
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public override int RecordsAffected
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        #endregion
-
         private int GetIndexByName(string name)
         {
             Guard.ThrowIfNullOrEmpty(name, "name");
-            
+
             return Array.FindIndex(_result.x, s => s == name);
         }
 
@@ -299,14 +309,14 @@ namespace KpNet.KdbPlusClient
         /// <returns></returns>
         internal static DbDataReader CreateReaderFromPrimitive(object result)
         {
-            c.Dict d = new c.Dict(new[] {"Result"}, new object[] {new[] {result}});
-            return new KdbDataReader(new c.Flip(d));
+            var d = new c.Dict(new[] {"Result"}, new object[] {new[] {result}});
+            return new KdbPlusDataReader(new c.Flip(d));
         }
 
         public static DbDataReader CreateReaderFromCollection(object result)
         {
-            c.Dict d = new c.Dict(new[] {"Result"}, new[] {result});
-            return new KdbDataReader(new c.Flip(d));
+            var d = new c.Dict(new[] {"Result"}, new[] {result});
+            return new KdbPlusDataReader(new c.Flip(d));
         }
     }
 }

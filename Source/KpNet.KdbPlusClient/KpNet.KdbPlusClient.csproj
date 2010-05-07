@@ -109,7 +109,7 @@
     <Compile Include="Simplified\IDatabaseClient.cs" />
     <Compile Include="Simplified\IMultipleResult.cs" />
     <Compile Include="Simplified\KdbPlusDatabaseClient.cs" />
-    <Compile Include="KdbDataReader.cs" />
+    <Compile Include="KdbPlusDataReader.cs" />
     <Compile Include="Simplified\KdbMultipleResult.cs" />
     <Compile Include="KdbPlusCommand.cs">
       <SubType>Component</SubType>

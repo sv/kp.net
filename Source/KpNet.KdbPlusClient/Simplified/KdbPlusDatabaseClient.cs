@@ -137,20 +137,20 @@ namespace KpNet.KdbPlusClient
             object result = DoNativeQuery(query);
 
             if (result == null)
-                return KdbDataReader.CreateEmptyReader();
+                return KdbPlusDataReader.CreateEmptyReader();
 
             Type resultType = result.GetType();
 
             // table is returned from k+
             if (resultType.IsAssignableFrom(typeof (c.Dict)) || resultType.IsAssignableFrom(typeof (c.Flip)))
-                return new KdbDataReader(c.td(result));
+                return new KdbPlusDataReader(c.td(result));
 
             // collection is returned
             if (result as IEnumerable != null)
-                return KdbDataReader.CreateReaderFromCollection(result);
+                return KdbPlusDataReader.CreateReaderFromCollection(result);
 
             // primitive e.g. count is returned
-            return KdbDataReader.CreateReaderFromPrimitive(result);
+            return KdbPlusDataReader.CreateReaderFromPrimitive(result);
         }
 
         /// <summary>

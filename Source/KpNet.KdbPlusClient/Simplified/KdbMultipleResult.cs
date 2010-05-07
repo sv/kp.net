@@ -31,7 +31,7 @@ namespace KpNet.KdbPlusClient
                 {
                     continue;
                 }
-                tableReaders[tableNames[i]] = new KdbDataReader(c.td(tables[i]));
+                tableReaders[tableNames[i]] = new KdbPlusDataReader(c.td(tables[i]));
             }
 
             return new DataReaderCollection(tableReaders);
