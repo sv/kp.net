@@ -32,26 +32,53 @@ namespace KpNet.KdbPlusClient
             InitIndexes();
         }
 
+        /// <summary>
+        /// Gets a value that indicates whether this <see cref="T:System.Data.Common.DbDataReader"/> contains one or more rows.
+        /// </summary>
+        /// <value></value>
+        /// <returns>true if the <see cref="T:System.Data.Common.DbDataReader"/> contains one or more rows; otherwise false.
+        /// </returns>
         public override bool HasRows
         {
             get { return _rowCount > 0; }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the <see cref="T:System.Data.Common.DbDataReader"/> is closed.
+        /// </summary>
+        /// <value></value>
+        /// <returns>true if the <see cref="T:System.Data.Common.DbDataReader"/> is closed; otherwise false.
+        /// </returns>
         public override bool IsClosed
         {
             get { return _isDisposed; }
         }
 
+        /// <summary>
+        /// Gets the number of columns in the current row.
+        /// </summary>
+        /// <value></value>
+        /// <returns>
+        /// The number of columns in the current row.
+        /// </returns>
         public override int FieldCount
         {
             get { return _columnCount; }
         }
 
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified i.
+        /// </summary>
+        /// <value></value>
         public override object this[int i]
         {
             get { return GetValue(i); }
         }
 
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified name.
+        /// </summary>
+        /// <value></value>
         public override object this[string name]
         {
             get
@@ -77,6 +104,12 @@ namespace KpNet.KdbPlusClient
             get { throw new NotImplementedException(); }
         }
 
+        /// <summary>
+        /// Advances the reader to the next record in a result set.
+        /// </summary>
+        /// <returns>
+        /// true if there are more rows; otherwise false.
+        /// </returns>
         public override bool Read()
         {
             ThrowIfDisposed();
@@ -92,6 +125,16 @@ namespace KpNet.KdbPlusClient
             return result;
         }
 
+        /// <summary>
+        /// Gets the name for the field to find.
+        /// </summary>
+        /// <param name="i">The index of the field to find.</param>
+        /// <returns>
+        /// The name of the field or the empty string (""), if there is no value to return.
+        /// </returns>
+        /// <exception cref="T:System.IndexOutOfRangeException">
+        /// The index passed was outside the range of 0 through <see cref="P:System.Data.IDataRecord.FieldCount"/>.
+        /// </exception>
         public override string GetName(int i)
         {
             ThrowIfDisposed();
@@ -101,11 +144,28 @@ namespace KpNet.KdbPlusClient
             return _result.x[i];
         }
 
+        /// <summary>
+        /// Return the value of the specified field.
+        /// </summary>
+        /// <param name="i">The index of the field to find.</param>
+        /// <returns>
+        /// The <see cref="T:System.Object"/> which will contain the field value upon return.
+        /// </returns>
+        /// <exception cref="T:System.IndexOutOfRangeException">
+        /// The index passed was outside the range of 0 through <see cref="P:System.Data.IDataRecord.FieldCount"/>.
+        /// </exception>
         public override object GetValue(int i)
         {
             return GetCurrentRowValue(i);
         }
 
+        /// <summary>
+        /// Gets all attribute columns in the collection for the current row.
+        /// </summary>
+        /// <param name="values">An array of <see cref="T:System.Object"/> into which to copy the attribute columns.</param>
+        /// <returns>
+        /// The number of instances of <see cref="T:System.Object"/> in the array.
+        /// </returns>
         public override int GetValues(object[] values)
         {
             if (values == null || values.Length < _columnCount)
@@ -120,6 +180,16 @@ namespace KpNet.KdbPlusClient
             return minVal;
         }
 
+        /// <summary>
+        /// Gets the 32-bit signed integer value of the specified field.
+        /// </summary>
+        /// <param name="i">The index of the field to find.</param>
+        /// <returns>
+        /// The 32-bit signed integer value of the specified field.
+        /// </returns>
+        /// <exception cref="T:System.IndexOutOfRangeException">
+        /// The index passed was outside the range of 0 through <see cref="P:System.Data.IDataRecord.FieldCount"/>.
+        /// </exception>
         public override int GetInt32(int i)
         {
             ThrowIfDisposed();
@@ -127,6 +197,16 @@ namespace KpNet.KdbPlusClient
             return (int) GetValue(i);
         }
 
+        /// <summary>
+        /// Gets the 64-bit signed integer value of the specified field.
+        /// </summary>
+        /// <param name="i">The index of the field to find.</param>
+        /// <returns>
+        /// The 64-bit signed integer value of the specified field.
+        /// </returns>
+        /// <exception cref="T:System.IndexOutOfRangeException">
+        /// The index passed was outside the range of 0 through <see cref="P:System.Data.IDataRecord.FieldCount"/>.
+        /// </exception>
         public override long GetInt64(int i)
         {
             ThrowIfDisposed();
@@ -134,16 +214,35 @@ namespace KpNet.KdbPlusClient
             return (Int64) Convert.ChangeType(GetValue(i), typeof (Int64), DefaultCulture);
         }
 
+        /// <summary>
+        /// Gets the string value of the specified field.
+        /// </summary>
+        /// <param name="i">The index of the field to find.</param>
+        /// <returns>The string value of the specified field.</returns>
+        /// <exception cref="T:System.IndexOutOfRangeException">
+        /// The index passed was outside the range of 0 through <see cref="P:System.Data.IDataRecord.FieldCount"/>.
+        /// </exception>
         public override string GetString(int i)
         {
             return Convert.ToString(GetValue(i), DefaultCulture);
         }
 
+        /// <summary>
+        /// Closes the <see cref="T:System.Data.Common.DbDataReader"/> object.
+        /// </summary>
         public override void Close()
         {
             _isDisposed = true;
         }
 
+        /// <summary>
+        /// Gets the column ordinal given the name of the column.
+        /// </summary>
+        /// <param name="name">The name of the column.</param>
+        /// <returns>The zero-based column ordinal.</returns>
+        /// <exception cref="T:System.IndexOutOfRangeException">
+        /// The name specified is not a valid column name.
+        /// </exception>
         public override int GetOrdinal(string name)
         {
             ThrowIfDisposed();
@@ -151,6 +250,14 @@ namespace KpNet.KdbPlusClient
             return GetIndexByName(name);
         }
 
+        /// <summary>
+        /// Gets the value of the specified column as a Boolean.
+        /// </summary>
+        /// <param name="i">The zero-based column ordinal.</param>
+        /// <returns>The value of the column.</returns>
+        /// <exception cref="T:System.IndexOutOfRangeException">
+        /// The index passed was outside the range of 0 through <see cref="P:System.Data.IDataRecord.FieldCount"/>.
+        /// </exception>
         public override bool GetBoolean(int i)
         {
             ThrowIfDisposed();
@@ -158,6 +265,16 @@ namespace KpNet.KdbPlusClient
             return (bool) GetValue(i);
         }
 
+        /// <summary>
+        /// Gets the 8-bit unsigned integer value of the specified column.
+        /// </summary>
+        /// <param name="i">The zero-based column ordinal.</param>
+        /// <returns>
+        /// The 8-bit unsigned integer value of the specified column.
+        /// </returns>
+        /// <exception cref="T:System.IndexOutOfRangeException">
+        /// The index passed was outside the range of 0 through <see cref="P:System.Data.IDataRecord.FieldCount"/>.
+        /// </exception>
         public override byte GetByte(int i)
         {
             ThrowIfDisposed();
@@ -185,6 +302,16 @@ namespace KpNet.KdbPlusClient
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Gets the character value of the specified column.
+        /// </summary>
+        /// <param name="i">The zero-based column ordinal.</param>
+        /// <returns>
+        /// The character value of the specified column.
+        /// </returns>
+        /// <exception cref="T:System.IndexOutOfRangeException">
+        /// The index passed was outside the range of 0 through <see cref="P:System.Data.IDataRecord.FieldCount"/>.
+        /// </exception>
         public override char GetChar(int i)
         {
             ThrowIfDisposed();
@@ -207,6 +334,16 @@ namespace KpNet.KdbPlusClient
             throw new NotSupportedException(Resources.NotSupportedInKDBPlus);
         }
 
+        /// <summary>
+        /// Gets the single-precision floating point number of the specified field.
+        /// </summary>
+        /// <param name="i">The index of the field to find.</param>
+        /// <returns>
+        /// The single-precision floating point number of the specified field.
+        /// </returns>
+        /// <exception cref="T:System.IndexOutOfRangeException">
+        /// The index passed was outside the range of 0 through <see cref="P:System.Data.IDataRecord.FieldCount"/>.
+        /// </exception>
         public override float GetFloat(int i)
         {
             ThrowIfDisposed();
@@ -214,6 +351,16 @@ namespace KpNet.KdbPlusClient
             return (float) GetValue(i);
         }
 
+        /// <summary>
+        /// Gets the double-precision floating point number of the specified field.
+        /// </summary>
+        /// <param name="i">The index of the field to find.</param>
+        /// <returns>
+        /// The double-precision floating point number of the specified field.
+        /// </returns>
+        /// <exception cref="T:System.IndexOutOfRangeException">
+        /// The index passed was outside the range of 0 through <see cref="P:System.Data.IDataRecord.FieldCount"/>.
+        /// </exception>
         public override double GetDouble(int i)
         {
             ThrowIfDisposed();
@@ -226,6 +373,16 @@ namespace KpNet.KdbPlusClient
             throw new NotSupportedException(Resources.NotSupportedInKDBPlus);
         }
 
+        /// <summary>
+        /// Gets the date and time data value of the specified field.
+        /// </summary>
+        /// <param name="i">The index of the field to find.</param>
+        /// <returns>
+        /// The date and time data value of the specified field.
+        /// </returns>
+        /// <exception cref="T:System.IndexOutOfRangeException">
+        /// The index passed was outside the range of 0 through <see cref="P:System.Data.IDataRecord.FieldCount"/>.
+        /// </exception>
         public override DateTime GetDateTime(int i)
         {
             return (DateTime) GetValue(i);
@@ -236,6 +393,16 @@ namespace KpNet.KdbPlusClient
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Return whether the specified field is set to null.
+        /// </summary>
+        /// <param name="i">The index of the field to find.</param>
+        /// <returns>
+        /// true if the specified field is set to null; otherwise, false.
+        /// </returns>
+        /// <exception cref="T:System.IndexOutOfRangeException">
+        /// The index passed was outside the range of 0 through <see cref="P:System.Data.IDataRecord.FieldCount"/>.
+        /// </exception>
         public override bool IsDBNull(int i)
         {
             ThrowIfDisposed();

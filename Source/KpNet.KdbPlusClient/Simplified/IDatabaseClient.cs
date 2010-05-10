@@ -21,6 +21,12 @@ namespace KpNet.KdbPlusClient
         TimeSpan ReceiveTimeout { get; set; }
 
         /// <summary>
+        /// Gets the date and time when client was created.
+        /// </summary>
+        /// <value>The creation date.</value>
+        DateTime Created { get; }
+
+        /// <summary>
         /// Executes the query and returns the result.
         /// </summary>
         /// <param name="query">The query.</param>

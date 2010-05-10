@@ -4,17 +4,29 @@ using System.Data.Common;
 
 namespace KpNet.KdbPlusClient
 {
+    // ADO.Net connection implementation for KDB+ provider.
     public sealed class KdbPlusConnection : DbConnection
     {
         private readonly KdbPlusConnectionStringBuilder _builder;
         private IDatabaseClient _client;
         private ConnectionState _state = ConnectionState.Closed;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KdbPlusConnection"/> class.
+        /// </summary>
+        /// <param name="connectionString">The connection string.</param>
         public KdbPlusConnection(string connectionString)
         {
             _builder = new KdbPlusConnectionStringBuilder(connectionString);
         }
 
+        /// <summary>
+        /// Gets or sets the string used to open the connection.
+        /// </summary>
+        /// <value></value>
+        /// <returns>
+        /// The connection string used to establish the initial connection. The exact contents of the connection string depend on the specific data source for this connection. The default value is an empty string.
+        /// </returns>
         public override string ConnectionString
         {
             get { return _builder.ConnectionString; }
@@ -28,21 +40,45 @@ namespace KpNet.KdbPlusClient
             }
         }
 
+        /// <summary>
+        /// Gets a string that describes the state of the connection.
+        /// </summary>
+        /// <value></value>
+        /// <returns>
+        /// The state of the connection. The format of the string returned depends on the specific type of connection you are using.
+        /// </returns>
         public override ConnectionState State
         {
             get { return _state; }
         }
 
+        /// <summary>
+        /// Gets the name of the database server to which to connect.
+        /// </summary>
+        /// <value></value>
+        /// <returns>
+        /// The name of the database server to which to connect. The default value is an empty string.
+        /// </returns>
         public override string DataSource
         {
             get { return _builder.Server; }
         }
 
+        /// <summary>
+        /// Gets the port.
+        /// </summary>
+        /// <value>The port.</value>
         public int Port
         {
             get { return _builder.Port; }
         }
 
+        /// <summary>
+        /// Closes the connection to the database. This is the preferred method of closing any open connection.
+        /// </summary>
+        /// <exception cref="T:System.Data.Common.DbException">
+        /// The connection-level error that occurred while opening the connection.
+        /// </exception>
         public override void Close()
         {
             if (_client != null)
@@ -51,6 +87,10 @@ namespace KpNet.KdbPlusClient
             _state = ConnectionState.Closed;
         }
 
+        /// <summary>
+        /// Gets the client.
+        /// </summary>
+        /// <value>The client.</value>
         internal IDatabaseClient Client
         {
             get
@@ -62,13 +102,15 @@ namespace KpNet.KdbPlusClient
             }
         }
 
+        /// <summary>
+        /// Opens a database connection with the settings specified by the <see cref="P:System.Data.Common.DbConnection.ConnectionString"/>.
+        /// </summary>
         public override void Open()
         {
             try
             {
                 _state = ConnectionState.Connecting;
-                _client = new KdbPlusDatabaseClient(_builder.Server, _builder.Port, _builder.UserID, _builder.Password,
-                                                    _builder.BufferSize);
+                _client = new PooledKdbPlusDatabaseClient(_builder);
                 _state = ConnectionState.Open;
             }
             catch (KdbPlusException)

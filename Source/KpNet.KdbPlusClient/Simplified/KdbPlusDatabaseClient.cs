@@ -12,17 +12,35 @@ namespace KpNet.KdbPlusClient
     /// </summary>
     public sealed class KdbPlusDatabaseClient : IDatabaseClient
     {
-        private const int DefaultBufferSize = 16384;
-        private readonly c _client;
+        private c _client;
         private TimeSpan _receiveTimeout = TimeSpan.FromMinutes(1);
         private TimeSpan _sendTimeout = TimeSpan.FromMinutes(1);
+        private DateTime _created;
+
+        static KdbPlusDatabaseClient()
+        {
+            c.e = Encoding.UTF8;
+        }
+
+        public KdbPlusDatabaseClient(string connectionString)
+            : this(new KdbPlusConnectionStringBuilder(connectionString))
+        {
+        }
+
+        public KdbPlusDatabaseClient(KdbPlusConnectionStringBuilder builder)
+        {
+            Guard.ThrowIfNull(builder, "builder");
+
+            Initialize(builder.Server, builder.Port, builder.UserID, builder.Password, builder.BufferSize);
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KdbPlusDatabaseClient"/> class.
         /// </summary>
         /// <param name="server">The server.</param>
         /// <param name="port">The port.</param>
-        public KdbPlusDatabaseClient(string server, int port) : this(server, port, null, null, DefaultBufferSize)
+        public KdbPlusDatabaseClient(string server, int port)
+            : this(server, port, null, null, KdbPlusConnectionStringBuilder.DefaultBufferSize)
         {
         }
 
@@ -36,8 +54,11 @@ namespace KpNet.KdbPlusClient
         /// <param name="bufferSize">The buffer size.</param>
         public KdbPlusDatabaseClient(string server, int port, string userId, string password, int bufferSize)
         {
-            c.e = Encoding.UTF8;
-            
+            Initialize(server, port, userId, password, bufferSize);
+        }
+
+        private void Initialize(string server, int port, string userId, string password, int bufferSize)
+        {
             Guard.ThrowIfNullOrEmpty(server, "server");
 
             if (port <= 0)
@@ -46,10 +67,12 @@ namespace KpNet.KdbPlusClient
             try
             {
                 _client = new c(server, port, FormatUserName(userId, password), bufferSize)
-                          {
-                              SendTimeout = ToMilliSeconds(_sendTimeout),
-                              ReceiveTimeout = ToMilliSeconds(_receiveTimeout)
-                          };
+                              {
+                                  SendTimeout = ToMilliSeconds(_sendTimeout),
+                                  ReceiveTimeout = ToMilliSeconds(_receiveTimeout)
+                              };
+
+                _created = DateTime.Now;
             }
             catch (Exception ex)
             {
@@ -123,6 +146,11 @@ namespace KpNet.KdbPlusClient
             object queryResult = DoNativeQuery(query);
 
             return new KdbMultipleResult((c.Dict) queryResult);
+        }
+
+        public DateTime Created
+        {
+            get { return _created; }
         }
 
         /// <summary>
@@ -202,6 +230,9 @@ namespace KpNet.KdbPlusClient
 
         private static string FormatUserName(string userName, string password)
         {
+            if (String.IsNullOrEmpty(userName))
+                return String.Empty;
+
             return String.Format(CultureInfo.InvariantCulture, "{0}:{1}", userName, password);
         }
     }
