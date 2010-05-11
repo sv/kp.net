@@ -105,7 +105,13 @@ namespace KpNet.KdbPlusClient
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
             EnsureCommandText();
-            return _connection.Client.ExecuteQuery(CommandText);
+            
+            DbDataReader reader = _connection.Client.ExecuteQuery(CommandText);
+
+            if ((behavior & CommandBehavior.CloseConnection) == CommandBehavior.CloseConnection)
+                _connection.Close();
+
+            return reader;
         }
 
         /// <summary>

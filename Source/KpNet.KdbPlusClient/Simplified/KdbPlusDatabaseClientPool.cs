@@ -105,16 +105,26 @@ namespace KpNet.KdbPlusClient
             lock (_locker)
             {
                 // dispose connection if _loadBalanceTimeout is set and is exceeded
-                if (_loadBalanceTimeout > 0 && (DateTime.Now - connection.Created).TotalSeconds > _loadBalanceTimeout)
+                if (ConnectionShouldBeDisposed(connection))
                 {
-                    _connectionsCount--;
-                    connection.Dispose();
-                    _createdConnections.Remove(connection);
+                    DisposeConnection(connection);
                 }
                 else _connectionPool.Add(connection);
 
                 Monitor.Pulse(_locker);
             }
+        }
+
+        private void DisposeConnection(IDatabaseClient connection)
+        {
+            _connectionsCount--;
+            connection.Dispose();
+            _createdConnections.Remove(connection);
+        }
+
+        private bool ConnectionShouldBeDisposed(IDatabaseClient connection)
+        {
+            return _loadBalanceTimeout > 0 && (DateTime.Now - connection.Created).TotalSeconds > _loadBalanceTimeout;
         }
 
         private void ThrowIfDisposed()
@@ -173,6 +183,14 @@ namespace KpNet.KdbPlusClient
         {
             IDatabaseClient connection = _connectionPool[0];
             _connectionPool.RemoveAt(0);
+
+            if (ConnectionShouldBeDisposed(connection))
+            {
+                DisposeConnection(connection);
+
+                return CreateNewConnection();
+            }
+
             return connection;
         }
         

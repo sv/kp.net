@@ -3,6 +3,7 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using Kdbplus;
 using KpNet.KdbPlusClient;
 
 namespace Example
@@ -112,16 +113,26 @@ namespace Example
                     Console.WriteLine("Current time {0}",time);
 
                     // create trade table
-                    client.ExecuteNonQuery("trade:([]time:();sym:();price:();size:())");
+                    client.ExecuteNonQuery("trade:([]sym:();price:();size:())");
+                    client.ExecuteNonQuery("`trade insert(`AIG;10.75;200)");
+                    client.ExecuteOneWayNonQuery("`trade insert(`AIG1;10.75;200)");
+                    
+                    // parameters handling example
+                    object[] x = { "xx", 93.5, 300 };
+                    client.ExecuteNonQuery("insert", "trade", x);
 
-                    // get list of tables in db
-                    // should output 'trade'
-                    IDataReader reader = client.ExecuteQuery("\\a");
-                    Console.WriteLine("Tables in database:");
+                    // one-way call example
+                    object[] y = { "yy", 93.5, 300 };
+                    client.ExecuteOneWayNonQuery("insert", "trade", y);
 
+                    // get data from trade
+                    IDataReader reader = client.ExecuteQuery("select from trade");
+                    Console.WriteLine("Trade:");
+
+                    Console.WriteLine("{0}\t{1}\t{2}", reader.GetName(0), reader.GetName(1), reader.GetName(2));
                     while (reader.Read())
                     {
-                        Console.WriteLine(reader.GetString(0));
+                        Console.WriteLine("{0}\t{1}\t{2}", reader.GetString(0), reader.GetDouble(1), reader.GetInt32(2));
                     }
                 }
             }

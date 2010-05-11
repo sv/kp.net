@@ -71,7 +71,6 @@ namespace KpNet.KdbPlusClient
                                   SendTimeout = ToMilliSeconds(_sendTimeout),
                                   ReceiveTimeout = ToMilliSeconds(_receiveTimeout)
                               };
-
                 _created = DateTime.Now;
             }
             catch (Exception ex)
@@ -82,33 +81,48 @@ namespace KpNet.KdbPlusClient
 
         #region IDatabaseClient Members
 
+
+        /// <summary>
+        /// Executes the instruction that does not return results.
+        /// Does not wait for the response - just puts the message into the tcp stack
+        /// and exits.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="parameters">The query parameters</param>
+        public void ExecuteOneWayNonQuery(string query, params object[] parameters)
+        {
+            Guard.ThrowIfNullOrEmpty(query, "query");
+
+            DoNativeOneWayQuery(query, parameters);
+        }
+
+
         /// <summary>
         /// Executes the query that returns scalar value.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="query">The query.</param>
+        /// <param name="parameters">The query parameters</param>
         /// <returns></returns>
-        public T ExecuteScalar<T>(string query) where T : struct
+        public T ExecuteScalar<T>(string query, params object[] parameters) where T : struct
         {
-            Guard.ThrowIfNullOrEmpty(query, "query");
-
-            object result = DoNativeQuery(query);
+            object result = DoNativeQuery(query, parameters);
             if (result is T)
                 return (T) result;
 
             return (T) GetResultFromFlip(result);
         }
 
+
         /// <summary>
         /// Executes the query that returns scalar value.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="parameters">The query parameters</param>
         /// <returns></returns>
-        public object ExecuteScalar(string query)
+        public object ExecuteScalar(string query, params object[] parameters)
         {
-            Guard.ThrowIfNullOrEmpty(query, "query");
-
-            return DoNativeQuery(query);
+            return DoNativeQuery(query, parameters);
         }
 
         /// <summary>
@@ -139,11 +153,15 @@ namespace KpNet.KdbPlusClient
             }
         }
 
-        public IMultipleResult ExecuteQueryWithMultipleResult(string query)
+        /// <summary>
+        /// Executes the query with multiple result.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="parameters">The query parameters</param>
+        /// <returns></returns>
+        public IMultipleResult ExecuteQueryWithMultipleResult(string query, params object[] parameters)
         {
-            Guard.ThrowIfNullOrEmpty(query, "query");
-
-            object queryResult = DoNativeQuery(query);
+            object queryResult = DoNativeQuery(query, parameters);
 
             return new KdbMultipleResult((c.Dict) queryResult);
         }
@@ -153,16 +171,16 @@ namespace KpNet.KdbPlusClient
             get { return _created; }
         }
 
+
         /// <summary>
         /// Executes the query and returns the result.
         /// </summary>
         /// <param name="query">The query.</param>
-        /// <returns></returns>
-        public DbDataReader ExecuteQuery(string query)
+        /// <param name="parameters">The query parameters</param>
+        /// <returns>DbDataReader object</returns>
+        public DbDataReader ExecuteQuery(string query, params object[] parameters)
         {
-            Guard.ThrowIfNullOrEmpty(query, "query");
-
-            object result = DoNativeQuery(query);
+            object result = DoNativeQuery(query, parameters);
 
             if (result == null)
                 return KdbPlusDataReader.CreateEmptyReader();
@@ -181,15 +199,15 @@ namespace KpNet.KdbPlusClient
             return KdbPlusDataReader.CreateReaderFromPrimitive(result);
         }
 
+
         /// <summary>
         /// Executes the instruction that does not return results.
         /// </summary>
         /// <param name="query">The query.</param>
-        public void ExecuteNonQuery(string query)
+        /// <param name="parameters">The query parameters</param>
+        public void ExecuteNonQuery(string query, params object[] parameters)
         {
-            Guard.ThrowIfNullOrEmpty(query, "query");
-
-            DoNativeQuery(query);
+            DoNativeQuery(query, parameters);
         }
 
         /// <summary>
@@ -203,11 +221,57 @@ namespace KpNet.KdbPlusClient
 
         #endregion
 
-        private object DoNativeQuery(string query)
+        private object DoNativeQuery(string query, params object[] parameters)
         {
             try
             {
-                return _client.k(query);
+                int length;
+
+                if (parameters == null || (length = parameters.Length) == 0)
+                    return _client.k(query);
+                
+                if (length == 1)
+                    return _client.k(query, parameters[0]);
+
+                if (length == 2)
+                    return _client.k(query, parameters[0], parameters[1]);
+
+                if (length == 3)
+                    return _client.k(query, parameters[0], parameters[1], parameters[2]);
+
+                return _client.k(query, parameters);
+            }
+            catch (Exception exc)
+            {
+                throw new KdbPlusException("Query execution exception.", query, exc);
+            }
+        }
+
+        private void DoNativeOneWayQuery(string query, params object[] parameters)
+        {
+            try
+            {
+                int length;
+
+                if (parameters == null || (length = parameters.Length) == 0)
+                {
+                    _client.ks(query);
+                    return;
+                }
+
+                if (length == 1)
+                {
+                    _client.ks(query, parameters[0]);
+                    return;
+                }
+
+                if (length == 2)
+                {
+                    _client.ks(query, parameters[0], parameters[1]);
+                    return;
+                }
+
+                _client.ks(query, parameters);
             }
             catch (Exception exc)
             {

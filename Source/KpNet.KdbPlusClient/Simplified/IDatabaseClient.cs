@@ -30,35 +30,49 @@ namespace KpNet.KdbPlusClient
         /// Executes the query and returns the result.
         /// </summary>
         /// <param name="query">The query.</param>
-        /// <returns></returns>
-        DbDataReader ExecuteQuery(string query);
+        /// <param name="parameters">The query parameters</param>
+        /// <returns>DbDataReader object</returns>
+        DbDataReader ExecuteQuery(string query, params object[] parameters);
 
         /// <summary>
         /// Executes the instruction that does not return results.
         /// </summary>
         /// <param name="query">The query.</param>
-        void ExecuteNonQuery(string query);
+        /// <param name="parameters">The query parameters</param>
+        void ExecuteNonQuery(string query, params object[] parameters);
+
+        /// <summary>
+        /// Executes the instruction that does not return results.
+        /// Does not wait for the response - just puts the message into the tcp stack
+        /// and exits.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="parameters">The query parameters</param>
+        void ExecuteOneWayNonQuery(string query, params object[] parameters);
 
         /// <summary>
         /// Executes the query that returns scalar value.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="query">The query.</param>
+        /// <param name="parameters">The query parameters</param>
         /// <returns></returns>
-        T ExecuteScalar<T>(string query) where T : struct;
+        T ExecuteScalar<T>(string query, params object[] parameters) where T : struct;
 
         /// <summary>
         /// Executes the query that returns scalar value.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="parameters">The query parameters</param>
         /// <returns></returns>
-        object ExecuteScalar(string query);
+        object ExecuteScalar(string query, params object[] parameters);
 
         /// <summary>
         /// Executes the query with multiple result.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="parameters">The query parameters</param>
         /// <returns></returns>
-        IMultipleResult ExecuteQueryWithMultipleResult(string query);
+        IMultipleResult ExecuteQueryWithMultipleResult(string query, params object[] parameters);
     }
 }
