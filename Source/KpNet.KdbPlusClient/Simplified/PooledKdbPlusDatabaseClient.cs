@@ -174,6 +174,43 @@ namespace KpNet.KdbPlusClient
             return _innerClient.ExecuteQueryWithMultipleResult(query, parameters);
         }
 
+        /// <summary>
+        /// Receives result from server.
+        /// </summary>
+        /// <returns></returns>
+        public object Receive()
+        {
+            return _innerClient.Receive();
+        }
+
+        /// <summary>
+        /// Receives result from server.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T Receive<T>()
+        {
+            return _innerClient.Receive<T>();
+        }
+
+        /// <summary>
+        /// Receives the query result from server.
+        /// </summary>
+        /// <returns></returns>
+        public DbDataReader ReceiveQueryResult()
+        {
+            return _innerClient.ReceiveQueryResult();
+        }
+
+        /// <summary>
+        /// Receives the query result from server.
+        /// </summary>
+        /// <returns></returns>
+        public IMultipleResult ReceiveMultipleQueryResult()
+        {
+            return _innerClient.ReceiveMultipleQueryResult();
+        }
+
         #endregion
     }
 }

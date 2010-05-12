@@ -20,7 +20,7 @@ namespace KpNet.KdbPlusClient
         private int _rowCount;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="KdbDataReader"/> class.
+        /// Initializes a new instance of the <see cref="KdbPlusDataReader"/> class.
         /// </summary>
         /// <param name="result">The original kdb+ query result.</param>
         public KdbPlusDataReader(c.Flip result)
@@ -88,7 +88,7 @@ namespace KpNet.KdbPlusClient
                 int index = GetIndexByName(name);
                 if (index == -1)
                 {
-                    throw new ArgumentException(" Can't locate provided column name.", "name");
+                    throw new ArgumentException("Can't locate provided column name.", "name");
                 }
                 return (this)[index];
             }
@@ -326,12 +326,14 @@ namespace KpNet.KdbPlusClient
 
         public override Guid GetGuid(int i)
         {
-            throw new NotSupportedException(Resources.NotSupportedInKDBPlus);
+            throw new NotSupportedException(Resources.NotSupportedInKdbPlus);
         }
 
         public override short GetInt16(int i)
         {
-            throw new NotSupportedException(Resources.NotSupportedInKDBPlus);
+            ThrowIfDisposed();
+
+            return (Int16)GetValue(i);
         }
 
         /// <summary>
@@ -370,7 +372,7 @@ namespace KpNet.KdbPlusClient
 
         public override decimal GetDecimal(int i)
         {
-            throw new NotSupportedException(Resources.NotSupportedInKDBPlus);
+            throw new NotSupportedException(Resources.NotSupportedInKdbPlus);
         }
 
         /// <summary>
@@ -386,11 +388,6 @@ namespace KpNet.KdbPlusClient
         public override DateTime GetDateTime(int i)
         {
             return (DateTime) GetValue(i);
-        }
-
-        public IDataReader GetData(int i)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>

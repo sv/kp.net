@@ -107,12 +107,8 @@ namespace KpNet.KdbPlusClient
         public T ExecuteScalar<T>(string query, params object[] parameters) where T : struct
         {
             object result = DoNativeQuery(query, parameters);
-            if (result is T)
-                return (T) result;
-
-            return (T) GetResultFromFlip(result);
+            return GetTypedResult<T>(result);
         }
-
 
         /// <summary>
         /// Executes the query that returns scalar value.
@@ -166,11 +162,61 @@ namespace KpNet.KdbPlusClient
             return new KdbMultipleResult((c.Dict) queryResult);
         }
 
+        /// <summary>
+        /// Receives result from server.
+        /// </summary>
+        /// <returns></returns>
+        public object Receive()
+        {
+            try
+            {
+                return _client.k();
+            }
+            catch (Exception ex)
+            {
+                throw new KdbPlusException("Failed to receive results from server.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Receives result from server.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T Receive<T>()
+        {
+            return GetTypedResult<T>(Receive());
+        }
+
+        /// <summary>
+        /// Receives the query result from server.
+        /// </summary>
+        /// <returns></returns>
+        public DbDataReader ReceiveQueryResult()
+        {
+            return CreateReader(Receive());
+        }
+
+
+        /// <summary>
+        /// Receives multiple query results from server.
+        /// </summary>
+        /// <returns></returns>
+        public IMultipleResult ReceiveMultipleQueryResult()
+        {
+            object queryResult = Receive();
+
+            return new KdbMultipleResult((c.Dict)queryResult);
+        }
+
+        /// <summary>
+        /// Gets the date and time when client was created.
+        /// </summary>
+        /// <value>The creation date.</value>
         public DateTime Created
         {
             get { return _created; }
         }
-
 
         /// <summary>
         /// Executes the query and returns the result.
@@ -182,23 +228,8 @@ namespace KpNet.KdbPlusClient
         {
             object result = DoNativeQuery(query, parameters);
 
-            if (result == null)
-                return KdbPlusDataReader.CreateEmptyReader();
-
-            Type resultType = result.GetType();
-
-            // table is returned from k+
-            if (resultType.IsAssignableFrom(typeof (c.Dict)) || resultType.IsAssignableFrom(typeof (c.Flip)))
-                return new KdbPlusDataReader(c.td(result));
-
-            // collection is returned
-            if (result as IEnumerable != null)
-                return KdbPlusDataReader.CreateReaderFromCollection(result);
-
-            // primitive e.g. count is returned
-            return KdbPlusDataReader.CreateReaderFromPrimitive(result);
+            return CreateReader(result);
         }
-
 
         /// <summary>
         /// Executes the instruction that does not return results.
@@ -220,6 +251,33 @@ namespace KpNet.KdbPlusClient
         }
 
         #endregion
+
+        private static T GetTypedResult<T>(object result)
+        {
+            if (result is T)
+                return (T)result;
+
+            return (T)GetResultFromFlip(result);
+        }
+
+        private static DbDataReader CreateReader(object result)
+        {
+            if (result == null)
+                return KdbPlusDataReader.CreateEmptyReader();
+
+            Type resultType = result.GetType();
+
+            // table is returned from k+
+            if (resultType.IsAssignableFrom(typeof(c.Dict)) || resultType.IsAssignableFrom(typeof(c.Flip)))
+                return new KdbPlusDataReader(c.td(result));
+
+            // collection is returned
+            if (result as IEnumerable != null)
+                return KdbPlusDataReader.CreateReaderFromCollection(result);
+
+            // primitive e.g. count is returned
+            return KdbPlusDataReader.CreateReaderFromPrimitive(result);
+        }
 
         private object DoNativeQuery(string query, params object[] parameters)
         {

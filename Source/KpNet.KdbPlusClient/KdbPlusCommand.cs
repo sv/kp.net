@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using System.Text;
 
 namespace KpNet.KdbPlusClient
 {
@@ -11,6 +12,8 @@ namespace KpNet.KdbPlusClient
     {
         private readonly KdbPlusConnection _connection;
         private string _commandText;
+
+        private readonly KdbPlusParameterCollection _parameters = new KdbPlusParameterCollection();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KdbPlusCommand"/> class.
@@ -78,7 +81,7 @@ namespace KpNet.KdbPlusClient
         public override CommandType CommandType
         {
             get { return CommandType.Text; }
-            set { throw new NotSupportedException(Resources.NotSupportedInKDBPlus); }
+            set { ThrowHelper.ThrowNotSupported(); }
         }
 
 
@@ -105,8 +108,12 @@ namespace KpNet.KdbPlusClient
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
             EnsureCommandText();
-            
-            DbDataReader reader = _connection.Client.ExecuteQuery(CommandText);
+
+            string preparedText;
+
+            object[] preparedParameters = PrepareQuery(out preparedText);
+
+            DbDataReader reader = _connection.Client.ExecuteQuery(preparedText, preparedParameters);
 
             if ((behavior & CommandBehavior.CloseConnection) == CommandBehavior.CloseConnection)
                 _connection.Close();
@@ -122,7 +129,11 @@ namespace KpNet.KdbPlusClient
         {
             EnsureCommandText();
 
-            _connection.Client.ExecuteNonQuery(CommandText);
+            string preparedText;
+
+            object[] preparedParameters = PrepareQuery(out preparedText);
+
+            _connection.Client.ExecuteNonQuery(preparedText, preparedParameters);
 
             return 0;
         }
@@ -137,7 +148,11 @@ namespace KpNet.KdbPlusClient
         {
             EnsureCommandText();
 
-            return _connection.Client.ExecuteScalar(CommandText);
+            string preparedText;
+
+            object[] preparedParameters = PrepareQuery(out preparedText);
+
+            return _connection.Client.ExecuteScalar(preparedText, preparedParameters);
         }
 
        
@@ -147,44 +162,117 @@ namespace KpNet.KdbPlusClient
                 throw new InvalidOperationException("CommandText is empty or not initialized.");
         }
 
+        private object[] PrepareQuery(out string preparedText)
+        {
+            object[] preparedParameters = null;
+            preparedText = _commandText;
+
+            bool anyParamsInQuery = preparedText.Contains(KdbPlusParameter.ParameterNamePrifix);
+            int parameterCount = _parameters.Count;
+
+            if (anyParamsInQuery)
+            {
+                preparedText = GetPreparedText(parameterCount, ref preparedParameters);
+            }
+            else
+            {
+                if (parameterCount > 0)
+                {
+                    preparedParameters = new object[parameterCount];
+
+                    for (int i = 0; i < parameterCount; i++)
+                        preparedParameters[i] = _parameters[i].Value;
+                }
+            }
+
+            return preparedParameters;
+        }
+
+        private string GetPreparedText(int parameterCount, ref object[] preparedParameters)
+        {
+            string preparedText;
+            int replacedCount = 0;
+
+            if (parameterCount > 0)
+            {
+                KdbPlusParameter[] cachedParameters = new KdbPlusParameter[parameterCount];
+                _parameters.CopyTo(cachedParameters, 0);
+
+                StringBuilder builder = new StringBuilder(_commandText);
+
+                for (int i = 0; i < parameterCount; i++)
+                {
+                    KdbPlusParameter param = cachedParameters[i];
+
+                    if (!String.IsNullOrEmpty(param.ParameterName) && _commandText.Contains(param.ParameterName))
+                    {
+                        replacedCount++;
+                        builder.Replace(param.ParameterName, param.FormatValue);
+                        cachedParameters[i] = null;
+                    }
+                }
+
+                preparedText = builder.ToString();
+                if (parameterCount - replacedCount > 0)
+                {
+                    preparedParameters = new object[parameterCount - replacedCount];
+
+                    int added = 0;
+                    for (int i = 0; i < parameterCount; i++)
+                    {
+                        KdbPlusParameter param = cachedParameters[i];
+
+                        if (param != null)
+                        {
+                            preparedParameters[added] = param.Value;
+                            added++;
+                        }
+                    }
+                }
+
+            }
+            else throw new InvalidOperationException("No parameters were specified for command.");
+            return preparedText;
+        }
+
         #region Not implemented or Not Supported members 
 
         protected override DbParameterCollection DbParameterCollection
         {
-            get { throw new NotImplementedException(); }
+            get { return _parameters; }
         }
 
         protected override DbTransaction DbTransaction
         {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
+            get { return ThrowHelper.ThrowNotImplemented<DbTransaction>(); }
+            set { ThrowHelper.ThrowNotImplemented(); }
         }
 
         public override bool DesignTimeVisible
         {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
+            get { return false; }
+            set { ThrowHelper.ThrowNotImplemented(); }
         }
 
         public override UpdateRowSource UpdatedRowSource
         {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
+            get { return ThrowHelper.ThrowNotImplemented<UpdateRowSource>(); }
+            set { ThrowHelper.ThrowNotImplemented(); }
         }
 
         public override void Prepare()
         {
-            throw new NotSupportedException(Resources.NotSupportedInKDBPlus);
+            ThrowHelper.ThrowNotSupported();
         }
 
         public override void Cancel()
         {
-            throw new NotImplementedException();
+            ThrowHelper.ThrowNotSupported();
         }
 
         protected override DbParameter CreateDbParameter()
         {
-            throw new NotImplementedException();
+            return new KdbPlusParameter();
         }
 
         #endregion

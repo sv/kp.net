@@ -66,7 +66,7 @@ namespace KpNet.KdbPlusClient
         /// <param name="parameters">The query parameters</param>
         /// <returns></returns>
         object ExecuteScalar(string query, params object[] parameters);
-
+        
         /// <summary>
         /// Executes the query with multiple result.
         /// </summary>
@@ -74,5 +74,30 @@ namespace KpNet.KdbPlusClient
         /// <param name="parameters">The query parameters</param>
         /// <returns></returns>
         IMultipleResult ExecuteQueryWithMultipleResult(string query, params object[] parameters);
+
+        /// <summary>
+        /// Receives result from server.
+        /// </summary>
+        /// <returns></returns>
+        object Receive();
+
+        /// <summary>
+        /// Receives result from server.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        T Receive<T>();
+
+        /// <summary>
+        /// Receives the query result from server.
+        /// </summary>
+        /// <returns></returns>
+        DbDataReader ReceiveQueryResult();
+
+        /// <summary>
+        /// Receives the query result from server.
+        /// </summary>
+        /// <returns></returns>
+        IMultipleResult ReceiveMultipleQueryResult();
     }
 }

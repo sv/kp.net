@@ -104,6 +104,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="KdbPlusParameter.cs" />
+    <Compile Include="KdbPlusParameterCollection.cs" />
     <Compile Include="Simplified\KdbPlusDatabaseClientPool.cs" />
     <Compile Include="Simplified\DataReaderCollection.cs" />
     <Compile Include="Guard.cs" />
@@ -127,6 +129,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Simplified\PooledKdbPlusDatabaseClient.cs" />
+    <Compile Include="ThrowHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">

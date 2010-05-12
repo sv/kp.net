@@ -1,9 +1,6 @@
-﻿
-
-using System;
+﻿using System;
 using System.Data;
 using System.Data.Common;
-using Kdbplus;
 using KpNet.KdbPlusClient;
 
 namespace Example
@@ -76,19 +73,39 @@ namespace Example
                     Console.WriteLine("Current time {0}", time);
 
                     // create trade table
-                    command.CommandText = "trade:([]time:();sym:();price:();size:())";
+                    command.CommandText = "trade:([]sym:();price:();size:())";
                     command.ExecuteNonQuery();
 
+                    command.CommandText = "`trade insert(`AIG;10.75;200)";
+                    command.ExecuteNonQuery();
 
-                    // get list of tables in db
-                    // should output 'trade'
-                    command.CommandText = "\\a";
+                    object[] x = { "xx", 93.5, 300 };
+                    command.CommandText = "insert";
+
+                    DbParameter table = command.CreateParameter();
+                    table.Value = "trade";
+                    command.Parameters.Add(table);
+
+                    DbParameter row = command.CreateParameter();
+                    row.Value = x;
+                    command.Parameters.Add(row);
+                    command.ExecuteNonQuery();
+
+                    command.CommandText = "select from trade where sym=@sym";
+                    command.Parameters.Clear();
+                    DbParameter sym = command.CreateParameter();
+                    sym.ParameterName = "@sym";
+                    sym.Value = "AIG";
+                    command.Parameters.Add(sym);
+
+                    // get data from trade
                     IDataReader reader = command.ExecuteReader();
-                    Console.WriteLine("Tables in database:");
+                    Console.WriteLine("Trade:");
 
+                    Console.WriteLine("{0}\t{1}\t{2}", reader.GetName(0), reader.GetName(1), reader.GetName(2));
                     while (reader.Read())
                     {
-                        Console.WriteLine(reader.GetString(0));
+                        Console.WriteLine("{0}\t{1}\t{2}", reader.GetString(0), reader.GetDouble(1), reader.GetInt32(2));
                     }
                 }
             }

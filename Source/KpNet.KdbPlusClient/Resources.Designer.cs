@@ -61,11 +61,20 @@ namespace KpNet.KdbPlusClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The requested feature is not available in KDB+..
+        ///   Looks up a localized string similar to The requested feature is not yet implemented in KDB+..
         /// </summary>
-        internal static string NotSupportedInKDBPlus {
+        internal static string NotImplementedInKdbPlus {
             get {
-                return ResourceManager.GetString("NotSupportedInKDBPlus", resourceCulture);
+                return ResourceManager.GetString("NotImplementedInKdbPlus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The requested feature is not supported in KDB+..
+        /// </summary>
+        internal static string NotSupportedInKdbPlus {
+            get {
+                return ResourceManager.GetString("NotSupportedInKdbPlus", resourceCulture);
             }
         }
     }

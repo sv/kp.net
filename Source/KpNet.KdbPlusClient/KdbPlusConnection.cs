@@ -129,22 +129,24 @@ namespace KpNet.KdbPlusClient
 
         public override string Database
         {
-            get { throw new NotSupportedException(Resources.NotSupportedInKDBPlus); }
+            get {
+                    return ThrowHelper.ThrowNotSupported<string>();
+                }
         }
 
         public override string ServerVersion
         {
-            get { throw new NotSupportedException(Resources.NotSupportedInKDBPlus); }
+            get { return ThrowHelper.ThrowNotSupported<string>(); }
         }
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
         {
-            throw new NotSupportedException(Resources.NotSupportedInKDBPlus);
+            return ThrowHelper.ThrowNotSupported<DbTransaction>();
         }
 
         public override void ChangeDatabase(string databaseName)
         {
-            throw new NotSupportedException(Resources.NotSupportedInKDBPlus);
+            ThrowHelper.ThrowNotSupported();
         }
 
         #endregion
