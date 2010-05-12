@@ -12,7 +12,9 @@ namespace KpNet.KdbPlusClient
         private DbType _dbType = DbType.Object;
         private string _name;
         private object _value;
+        public event EventHandler ParameterChanged;
 
+        
         public KdbPlusParameter()
         {
         }
@@ -41,7 +43,11 @@ namespace KpNet.KdbPlusClient
         public override DbType DbType
         {
             get { return _dbType; }
-            set { _dbType = value; }
+            set
+            {
+                _dbType = value;
+                InvokeParameterChanged();
+            }
         }
 
         public override ParameterDirection Direction
@@ -59,7 +65,10 @@ namespace KpNet.KdbPlusClient
         public override String ParameterName
         {
             get { return _name; }
-            set { _name = value; }
+            set {
+                    _name = value;
+                    InvokeParameterChanged();
+                }
         }
 
         public override int Size
@@ -93,6 +102,7 @@ namespace KpNet.KdbPlusClient
             {
                 _value = value;
                 _dbType = InferType(value);
+                InvokeParameterChanged();
             }
         }
 
@@ -166,6 +176,12 @@ namespace KpNet.KdbPlusClient
                 default:
                     throw new SystemException("Value is of unknown data type");
             }
+        }
+
+        private void InvokeParameterChanged()
+        {
+            EventHandler handler = ParameterChanged;
+            if (handler != null) handler(this, EventArgs.Empty);
         }
     }
 }

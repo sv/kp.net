@@ -12,6 +12,8 @@ namespace KpNet.KdbPlusClient
     {
         private readonly KdbPlusConnection _connection;
         private string _commandText;
+        private string _preparedText;
+        private object[] _preparedParameters;
 
         private readonly KdbPlusParameterCollection _parameters = new KdbPlusParameterCollection();
 
@@ -25,6 +27,7 @@ namespace KpNet.KdbPlusClient
             Guard.ThrowIfNull(connection, "connection");
             _commandText = commandText;
             _connection = connection;
+            _parameters.ParametersChanged += ClearPreparedValues;
         }
 
         /// <summary>
@@ -49,6 +52,7 @@ namespace KpNet.KdbPlusClient
             {
                 Guard.ThrowIfNullOrEmpty(value, "CommandText");
                 _commandText = value;
+                _preparedText = null;
             }
         }
 
@@ -109,11 +113,7 @@ namespace KpNet.KdbPlusClient
         {
             EnsureCommandText();
 
-            string preparedText;
-
-            object[] preparedParameters = PrepareQuery(out preparedText);
-
-            DbDataReader reader = _connection.Client.ExecuteQuery(preparedText, preparedParameters);
+            DbDataReader reader = _connection.Client.ExecuteQuery(_preparedText, _preparedParameters);
 
             if ((behavior & CommandBehavior.CloseConnection) == CommandBehavior.CloseConnection)
                 _connection.Close();
@@ -129,11 +129,7 @@ namespace KpNet.KdbPlusClient
         {
             EnsureCommandText();
 
-            string preparedText;
-
-            object[] preparedParameters = PrepareQuery(out preparedText);
-
-            _connection.Client.ExecuteNonQuery(preparedText, preparedParameters);
+            _connection.Client.ExecuteNonQuery(_preparedText, _preparedParameters);
 
             return 0;
         }
@@ -147,12 +143,16 @@ namespace KpNet.KdbPlusClient
         public override object ExecuteScalar()
         {
             EnsureCommandText();
+            
+            return _connection.Client.ExecuteScalar(_preparedText, _preparedParameters);
+        }
 
-            string preparedText;
-
-            object[] preparedParameters = PrepareQuery(out preparedText);
-
-            return _connection.Client.ExecuteScalar(preparedText, preparedParameters);
+        /// <summary>
+        /// Creates a prepared (or compiled) version of the command on the data source.
+        /// </summary>
+        public override void Prepare()
+        {
+            PrepareQuery();
         }
 
        
@@ -160,19 +160,22 @@ namespace KpNet.KdbPlusClient
         {
             if (String.IsNullOrEmpty(_commandText))
                 throw new InvalidOperationException("CommandText is empty or not initialized.");
+
+            if (String.IsNullOrEmpty(_preparedText))
+                PrepareQuery();
         }
 
-        private object[] PrepareQuery(out string preparedText)
+        private void PrepareQuery()
         {
             object[] preparedParameters = null;
-            preparedText = _commandText;
+            _preparedText = _commandText;
 
-            bool anyParamsInQuery = preparedText.Contains(KdbPlusParameter.ParameterNamePrifix);
+            bool anyParamsInQuery = _preparedText.Contains(KdbPlusParameter.ParameterNamePrifix);
             int parameterCount = _parameters.Count;
 
             if (anyParamsInQuery)
             {
-                preparedText = GetPreparedText(parameterCount, ref preparedParameters);
+                _preparedText = GetPreparedText(parameterCount, ref preparedParameters);
             }
             else
             {
@@ -185,7 +188,7 @@ namespace KpNet.KdbPlusClient
                 }
             }
 
-            return preparedParameters;
+            _preparedParameters = preparedParameters;
         }
 
         private string GetPreparedText(int parameterCount, ref object[] preparedParameters)
@@ -235,6 +238,12 @@ namespace KpNet.KdbPlusClient
             return preparedText;
         }
 
+        private void ClearPreparedValues(object sender, EventArgs e)
+        {
+            _preparedText = null;
+            _preparedParameters = null;
+        }
+
         #region Not implemented or Not Supported members 
 
         protected override DbParameterCollection DbParameterCollection
@@ -258,11 +267,6 @@ namespace KpNet.KdbPlusClient
         {
             get { return ThrowHelper.ThrowNotImplemented<UpdateRowSource>(); }
             set { ThrowHelper.ThrowNotImplemented(); }
-        }
-
-        public override void Prepare()
-        {
-            ThrowHelper.ThrowNotSupported();
         }
 
         public override void Cancel()

@@ -10,14 +10,15 @@ namespace KpNet.KdbPlusClient
         private const int NoIndex = -1;
         private readonly List<KdbPlusParameter> _parameters = new List<KdbPlusParameter>();
         private readonly object _syncRoot = new object();
+        public event EventHandler ParametersChanged;
 
         public override int Add(object value)
         {
             KdbPlusParameter param = GetParameter(value);
 
-            _parameters.Add(param);
+            AddParameter(param);
 
-            return FindIndex(param.ParameterName);
+            return _parameters.IndexOf(param);
         }
 
         public override bool Contains(object value)
@@ -29,21 +30,27 @@ namespace KpNet.KdbPlusClient
 
         public override void Clear()
         {
+            foreach (KdbPlusParameter param in _parameters)
+            {
+                UnSubscribeToParameterChanges(param);
+            }
+
             _parameters.Clear();
+            InvokeParametersChanged();
         }
 
         public override int IndexOf(object value)
         {
             KdbPlusParameter param = GetParameter(value);
 
-            return FindIndex(param.ParameterName);
+            return _parameters.IndexOf(param);
         }
 
         public override void Insert(int index, object value)
         {
             KdbPlusParameter param = GetParameter(value);
 
-            _parameters.Insert(index, param);
+            InsertParameter(index, param);
         }
 
         public override void Remove(object value)
@@ -51,11 +58,13 @@ namespace KpNet.KdbPlusClient
             KdbPlusParameter param = GetParameter(value);
 
             _parameters.Remove(param);
+            UnSubscribeToParameterChanges(param);
+            InvokeParametersChanged();
         }
 
         public override void RemoveAt(int index)
         {
-            _parameters.RemoveAt(index);
+            RemoveParameterAtIndex(index);
         }
 
         public override IEnumerator GetEnumerator()
@@ -75,7 +84,15 @@ namespace KpNet.KdbPlusClient
 
         public override void AddRange(Array values)
         {
-            _parameters.AddRange((IEnumerable<KdbPlusParameter>)values);
+            IEnumerable<KdbPlusParameter> parameters = (IEnumerable<KdbPlusParameter>) values;
+            _parameters.AddRange(parameters);
+
+            foreach (KdbPlusParameter param in parameters)
+            {
+                SubscribeToParameterChanges(param);
+            }
+
+            InvokeParametersChanged();
         }
 
         public override bool Contains(string parameterName)
@@ -123,14 +140,18 @@ namespace KpNet.KdbPlusClient
             int idx = FindIndex(parameterName);
 
             if (idx != NoIndex)
-                RemoveAt(idx);
+            {
+                RemoveParameterAtIndex(idx);
+            }
 
-            throw new InvalidOperationException("Parameter is missing in the collection.");
+            else throw new InvalidOperationException("Parameter is missing in the collection.");
         }
 
         protected override void SetParameter(int index, DbParameter value)
         {
-            _parameters.Insert(index, GetParameter(value));
+            KdbPlusParameter param = GetParameter(value);
+
+            InsertParameter(index,param);
         }
 
         protected override void SetParameter(string parameterName, DbParameter value)
@@ -138,11 +159,14 @@ namespace KpNet.KdbPlusClient
             KdbPlusParameter param = GetParameter(value);
             int idx = FindIndex(parameterName);
 
-            if (idx>=0)
-                _parameters.RemoveAt(idx);
+            if (idx >= 0)
+            {
+                RemoveParameterAtIndex(idx);
+            }
 
-            _parameters.Add(param);
+            AddParameter(param);
         }
+
         private static KdbPlusParameter GetParameter(object value)
         {
             Guard.ThrowIfNull(value, "value");
@@ -167,6 +191,8 @@ namespace KpNet.KdbPlusClient
 
         private int FindIndex(string parameterName)
         {
+            Guard.ThrowIfNullOrEmpty(parameterName, "parameterName");
+
             for (int i = 0; i < _parameters.Count; i++)
             {
                 if (String.Compare(_parameters[i].ParameterName, parameterName, StringComparison.OrdinalIgnoreCase) == 0)
@@ -174,6 +200,48 @@ namespace KpNet.KdbPlusClient
             }
 
             return NoIndex;
+        }
+
+        private void AddParameter(KdbPlusParameter param)
+        {
+            _parameters.Add(param);
+            SubscribeToParameterChanges(param);
+            InvokeParametersChanged();
+        }
+
+        private void InsertParameter(int index, KdbPlusParameter param)
+        {
+            _parameters.Insert(index, param);
+            SubscribeToParameterChanges(param);
+            InvokeParametersChanged();
+        }
+
+        private void RemoveParameterAtIndex(int index)
+        {
+            UnSubscribeToParameterChanges(_parameters[index]);
+            _parameters.RemoveAt(index);
+            InvokeParametersChanged();
+        }
+
+        private void SubscribeToParameterChanges(KdbPlusParameter parameter)
+        {
+            parameter.ParameterChanged += SingleParameterChanged;
+        }
+
+        private void UnSubscribeToParameterChanges(KdbPlusParameter parameter)
+        {
+            parameter.ParameterChanged -= SingleParameterChanged;
+        }
+
+        private void InvokeParametersChanged()
+        {
+            EventHandler handler = ParametersChanged;
+            if (handler != null) handler(this, EventArgs.Empty);
+        }
+
+        void SingleParameterChanged(object sender, EventArgs e)
+        {
+            InvokeParametersChanged();
         }
     }
 

@@ -91,6 +91,8 @@ namespace Example
                     command.Parameters.Add(row);
                     command.ExecuteNonQuery();
 
+                    command.ExecuteNonQuery();
+
                     command.CommandText = "select from trade where sym=@sym";
                     command.Parameters.Clear();
                     DbParameter sym = command.CreateParameter();
