@@ -18,6 +18,8 @@ namespace KpNet.KdbPlusClient
 
             AddParameter(param);
 
+            InvokeParametersChanged();
+
             return _parameters.IndexOf(param);
         }
 
@@ -51,6 +53,8 @@ namespace KpNet.KdbPlusClient
             KdbPlusParameter param = GetParameter(value);
 
             InsertParameter(index, param);
+
+            InvokeParametersChanged();
         }
 
         public override void Remove(object value)
@@ -65,6 +69,8 @@ namespace KpNet.KdbPlusClient
         public override void RemoveAt(int index)
         {
             RemoveParameterAtIndex(index);
+
+            InvokeParametersChanged();
         }
 
         public override IEnumerator GetEnumerator()
@@ -142,6 +148,7 @@ namespace KpNet.KdbPlusClient
             if (idx != NoIndex)
             {
                 RemoveParameterAtIndex(idx);
+                InvokeParametersChanged();
             }
 
             else throw new InvalidOperationException("Parameter is missing in the collection.");
@@ -152,6 +159,7 @@ namespace KpNet.KdbPlusClient
             KdbPlusParameter param = GetParameter(value);
 
             InsertParameter(index,param);
+            InvokeParametersChanged();
         }
 
         protected override void SetParameter(string parameterName, DbParameter value)
@@ -165,6 +173,7 @@ namespace KpNet.KdbPlusClient
             }
 
             AddParameter(param);
+            InvokeParametersChanged();
         }
 
         private static KdbPlusParameter GetParameter(object value)
@@ -180,6 +189,8 @@ namespace KpNet.KdbPlusClient
 
         private KdbPlusParameter FindParameter(string parameterName)
         {
+            Guard.ThrowIfNullOrEmpty(parameterName, "parameterName");
+
             foreach (KdbPlusParameter param in _parameters)
             {
                 if (String.Compare(param.ParameterName, parameterName, StringComparison.OrdinalIgnoreCase) == 0)
@@ -206,21 +217,18 @@ namespace KpNet.KdbPlusClient
         {
             _parameters.Add(param);
             SubscribeToParameterChanges(param);
-            InvokeParametersChanged();
         }
 
         private void InsertParameter(int index, KdbPlusParameter param)
         {
             _parameters.Insert(index, param);
             SubscribeToParameterChanges(param);
-            InvokeParametersChanged();
         }
 
         private void RemoveParameterAtIndex(int index)
         {
             UnSubscribeToParameterChanges(_parameters[index]);
             _parameters.RemoveAt(index);
-            InvokeParametersChanged();
         }
 
         private void SubscribeToParameterChanges(KdbPlusParameter parameter)

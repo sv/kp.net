@@ -111,7 +111,7 @@ namespace KpNet.KdbPlusClient
             get
             {
                 if (_dbType == DbType.String)
-                    return String.Concat("`", _value);
+                    return String.Format(CultureInfo.InvariantCulture, "`$\"{0}\"", _value);
                 return _value.ToString();
             }
         }
