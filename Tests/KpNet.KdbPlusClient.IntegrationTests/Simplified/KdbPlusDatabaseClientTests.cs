@@ -6,16 +6,21 @@ using NUnit.Framework;
 namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
 {
     [TestFixture]
-    public sealed class KdbPlusDatabaseClientTests
+    public class KdbPlusDatabaseClientTests
     {
-        public const string Host = "localhost";
-        public const int Port = 1001;
-        public const string DescriptionMessage = "Q process should be started at localhost:1001";
-
-        [Test(Description = DescriptionMessage)]
+        
+        [Test(Description = Constants.DescriptionMessage)]
         public void SuccessfulConnectTest()
         {
-            using (new KdbPlusDatabaseClient(Host, Port))
+            using (CreateDatabaseClient())
+            {
+            }
+        }
+
+        [Test(Description = Constants.DescriptionMessage)]
+        public void SuccessfulConnectViaConnectionStringTest()
+        {
+            using (CreateDatabaseClientFromConString("server=localhost;port=1001"))
             {
             }
         }
@@ -24,42 +29,42 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
         [ExpectedException(typeof(KdbPlusException))]
         public void FailedConnectTest()
         {
-            using (new KdbPlusDatabaseClient("fakehost", Port))
+            using (CreateFakeDatabaseClient())
             {
             }
         }
 
-        [Test(Description = DescriptionMessage)]
+        [Test(Description = Constants.DescriptionMessage)]
         public void GetCurrentTimeTest()
         {
-            using (IDatabaseClient client  = new KdbPlusDatabaseClient(Host, Port))
+            using (IDatabaseClient client  = CreateDatabaseClient())
             {
                 Assert.IsInstanceOfType(typeof(TimeSpan), client.ExecuteScalar(".z.T"));
             }
         }
 
-        [Test(Description = DescriptionMessage)]
+        [Test(Description = Constants.DescriptionMessage)]
         public void GetCurrentTypedTimeTest()
         {
-            using (IDatabaseClient client = new KdbPlusDatabaseClient(Host, Port))
+            using (IDatabaseClient client = CreateDatabaseClient())
             {
                 Assert.IsInstanceOfType(typeof(TimeSpan), client.ExecuteScalar<TimeSpan>(".z.T"));
             }
         }
 
-        [Test(Description = DescriptionMessage)]
+        [Test(Description = Constants.DescriptionMessage)]
         public void GetScalar0Test()
         {
-            using (IDatabaseClient client = new KdbPlusDatabaseClient(Host, Port))
+            using (IDatabaseClient client = CreateDatabaseClient())
             {
                 Assert.IsInstanceOfType(typeof(int), client.ExecuteScalar<int>("0"));
             }
         }
 
-        [Test(Description = DescriptionMessage)]
+        [Test(Description = Constants.DescriptionMessage)]
         public void ExecuteNonQueryTest()
         {
-            using (IDatabaseClient client = new KdbPlusDatabaseClient(Host, Port))
+            using (IDatabaseClient client = CreateDatabaseClient())
             {
                 CreateTradeAndInsertRow(client);
 
@@ -69,10 +74,10 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
 
         
 
-        [Test(Description = DescriptionMessage)]
+        [Test(Description = Constants.DescriptionMessage)]
         public void ExecuteOneWayNonQueryTest()
         {
-            using (IDatabaseClient client = new KdbPlusDatabaseClient(Host, Port))
+            using (IDatabaseClient client = CreateDatabaseClient())
             {
                 CreateTradeAndInsertRowOneWay(client);
 
@@ -82,10 +87,10 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
             }
         }
 
-        [Test(Description = DescriptionMessage)]
+        [Test(Description = Constants.DescriptionMessage)]
         public void ExecuteQueryTest()
         {
-            using (IDatabaseClient client = new KdbPlusDatabaseClient(Host, Port))
+            using (IDatabaseClient client = CreateDatabaseClient())
             {
                 CreateTradeAndInsertRow(client);
 
@@ -96,10 +101,10 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
             }
         }
 
-        [Test(Description = DescriptionMessage)]
+        [Test(Description = Constants.DescriptionMessage)]
         public void ExecuteNonQueryWithParamTest()
         {
-            using (IDatabaseClient client = new KdbPlusDatabaseClient(Host, Port))
+            using (IDatabaseClient client = CreateDatabaseClient())
             {
                 CreateTrade(client);
                 
@@ -110,10 +115,10 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
             }
         }
 
-        [Test(Description = DescriptionMessage)]
+        [Test(Description = Constants.DescriptionMessage)]
         public void ExecuteOneWayNonQueryWithParamTest()
         {
-            using (IDatabaseClient client = new KdbPlusDatabaseClient(Host, Port))
+            using (IDatabaseClient client = CreateDatabaseClient())
             {
                 CreateTrade(client);
 
@@ -126,10 +131,10 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
             }
         }
 
-        [Test(Description = DescriptionMessage)]
+        [Test(Description = Constants.DescriptionMessage)]
         public void ExecuteQueryWithParamTest()
         {
-            using (IDatabaseClient client = new KdbPlusDatabaseClient(Host, Port))
+            using (IDatabaseClient client = CreateDatabaseClient())
             {
                 CreateTrade(client);
                 client.ExecuteNonQuery("f:{[table;symbol]select from table where sym=symbol}");
@@ -143,10 +148,10 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
             }
         }
 
-        [Test(Description = DescriptionMessage)]
+        [Test(Description = Constants.DescriptionMessage)]
         public void ExecuteQueryWithParamMultipleResultRowsTest()
         {
-            using (IDatabaseClient client = new KdbPlusDatabaseClient(Host, Port))
+            using (IDatabaseClient client = CreateDatabaseClient())
             {
                 CreateTrade(client);
                 client.ExecuteNonQuery("f:{[table]select from table}");
@@ -161,10 +166,10 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
             }
         }
 
-        [Test(Description = DescriptionMessage)]
+        [Test(Description = Constants.DescriptionMessage)]
         public void ExecuteQueryWithParamMultipleResultsTest()
         {
-            using (IDatabaseClient client = new KdbPlusDatabaseClient(Host, Port))
+            using (IDatabaseClient client = CreateDatabaseClient())
             {
                 CreateTrade(client);
                 client.ExecuteNonQuery("f:{[table]d:`result1`result2!(); d[`result1]:select from table; d[`result2]:select from table; :d}");
@@ -180,41 +185,41 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
             }
         }
 
-        [Test(Description = DescriptionMessage)]
+        [Test(Description = Constants.DescriptionMessage)]
         [ExpectedException(typeof(KdbPlusException))]
         public void ExceptionAtScalarTest()
         {
-            using (IDatabaseClient client = new KdbPlusDatabaseClient(Host, Port))
+            using (IDatabaseClient client = CreateDatabaseClient())
             {
                 client.ExecuteScalar("exception");
             }
         }
 
-        [Test(Description = DescriptionMessage)]
+        [Test(Description = Constants.DescriptionMessage)]
         [ExpectedException(typeof(KdbPlusException))]
         public void ExceptionAtNonQueryTest()
         {
-            using (IDatabaseClient client = new KdbPlusDatabaseClient(Host, Port))
+            using (IDatabaseClient client = CreateDatabaseClient())
             {
                 client.ExecuteNonQuery("exception");
             }
         }
 
-        [Test(Description = DescriptionMessage)]
+        [Test(Description = Constants.DescriptionMessage)]
         [ExpectedException(typeof(KdbPlusException))]
         public void ExceptionAtQueryTest()
         {
-            using (IDatabaseClient client = new KdbPlusDatabaseClient(Host, Port))
+            using (IDatabaseClient client = CreateDatabaseClient())
             {
                 client.ExecuteQuery("exception");
             }
         }
 
-        [Test(Description = DescriptionMessage)]
+        [Test(Description = Constants.DescriptionMessage)]
         [ExpectedException(typeof(KdbPlusException))]
         public void ExceptionAtMultipleResultTest()
         {
-            using (IDatabaseClient client = new KdbPlusDatabaseClient(Host, Port))
+            using (IDatabaseClient client = CreateDatabaseClient())
             {
                 client.ExecuteQueryWithMultipleResult("exception");
             }
@@ -275,6 +280,26 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
             Assert.AreEqual(300, reader.GetInt32(2));
 
             Assert.IsFalse(reader.Read());
+        }
+
+        protected IDatabaseClient CreateDatabaseClient()
+        {
+            return CreateDatabaseClient(Constants.Host, Constants.Port);
+        }
+
+        protected virtual IDatabaseClient CreateDatabaseClientFromConString(string connectionString)
+        {
+            return new KdbPlusDatabaseClient(connectionString);
+        }
+
+        protected IDatabaseClient CreateFakeDatabaseClient()
+        {
+            return CreateDatabaseClient("fakehost", 1);
+        }
+
+        protected virtual IDatabaseClient CreateDatabaseClient(string host, int port)
+        {
+            return new KdbPlusDatabaseClient(host, port);
         }
     }
 }

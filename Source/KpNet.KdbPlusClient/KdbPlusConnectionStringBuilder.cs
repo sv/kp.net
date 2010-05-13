@@ -38,6 +38,13 @@ namespace KpNet.KdbPlusClient
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="KdbPlusConnectionStringBuilder"/> class.
+        /// </summary>
+        public KdbPlusConnectionStringBuilder()
+        {
+        }
+
+        /// <summary>
         /// Gets or sets the server.
         /// </summary>
         /// <value>The server.</value>

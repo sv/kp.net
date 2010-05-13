@@ -49,8 +49,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Constants.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Simplified\KdbPlusDatabaseClientTests.cs" />
+    <Compile Include="Simplified\PooledKdbPlusDatabaseClientTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Source\KpNet.KdbPlusClient\KpNet.KdbPlusClient.csproj">
