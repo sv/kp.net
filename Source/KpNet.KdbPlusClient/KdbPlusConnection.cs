@@ -81,6 +81,9 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override void Close()
         {
+            if (State == ConnectionState.Closed)
+                return;
+
             if (_client != null)
                 _client.Dispose();
 
@@ -147,6 +150,13 @@ namespace KpNet.KdbPlusClient
         public override void ChangeDatabase(string databaseName)
         {
             ThrowHelper.ThrowNotSupported();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            
+            Close();
         }
 
         #endregion

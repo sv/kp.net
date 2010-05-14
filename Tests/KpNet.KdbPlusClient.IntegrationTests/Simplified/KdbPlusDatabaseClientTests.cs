@@ -20,7 +20,7 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
         [Test(Description = Constants.DescriptionMessage)]
         public void SuccessfulConnectViaConnectionStringTest()
         {
-            using (CreateDatabaseClientFromConString("server=localhost;port=1001"))
+            using (CreateDatabaseClientFromConString(Constants.ConnectionString))
             {
             }
         }
