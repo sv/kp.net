@@ -16,6 +16,29 @@ namespace KpNet.KdbPlusClient
         private KdbPlusDatabaseClientPool _pool;
         private IDatabaseClient _innerClient;
 
+        /// <summary>
+        /// Gets the inner client.
+        /// </summary>
+        /// <value>The inner client.</value>
+        internal IDatabaseClient InnerClient
+        {
+            get
+            {
+                return _innerClient;
+            }
+        }
+
+        /// <summary>
+        /// Gets the connection pools.
+        /// </summary>
+        /// <value>The pools.</value>
+        internal static IDictionary<string, KdbPlusDatabaseClientPool> Pools
+        {
+            get
+            {
+                return _pools;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PooledKdbPlusDatabaseClient"/> class.
@@ -41,6 +64,18 @@ namespace KpNet.KdbPlusClient
             }
 
             else _innerClient = new KdbPlusDatabaseClient(builder);
+        }
+
+        /// <summary>
+        /// Gets the connection pool.
+        /// </summary>
+        /// <value>The pool.</value>
+        internal KdbPlusDatabaseClientPool Pool
+        {
+            get
+            {
+                return _pool;
+            }
         }
 
         private void GetClientFromPool(KdbPlusConnectionStringBuilder builder)
@@ -70,6 +105,18 @@ namespace KpNet.KdbPlusClient
                 _pool.ReturnConnectionToPool(_innerClient);
 
             else _innerClient.Dispose();
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="PooledKdbPlusDatabaseClient"/> is pooled.
+        /// </summary>
+        /// <value><c>true</c> if pooled; otherwise, <c>false</c>.</value>
+        public bool Pooled
+        {
+            get
+            {
+                return _pool != null;
+            }
         }
 
         /// <summary>

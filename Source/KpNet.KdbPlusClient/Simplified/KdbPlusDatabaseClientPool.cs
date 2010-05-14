@@ -62,6 +62,21 @@ namespace KpNet.KdbPlusClient
         }
 
         /// <summary>
+        /// Gets the connections count.
+        /// </summary>
+        /// <value>The connections count.</value>
+        public int ConnectionsCount
+        {
+            get
+            {
+                lock(_locker)
+                {
+                    return _connectionsCount;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the connection from pool.
         /// </summary>
         /// <returns></returns>
