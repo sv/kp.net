@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Threading;
 
 namespace KpNet.KdbPlusClient
 {
@@ -12,7 +13,8 @@ namespace KpNet.KdbPlusClient
         private static readonly SortedDictionary<string, KdbPlusDatabaseClientPool> _pools =
             new SortedDictionary<string, KdbPlusDatabaseClientPool>(StringComparer.OrdinalIgnoreCase);
 
-        private static readonly object _locker = new object();
+        private static readonly ReaderWriterLock _locker = new ReaderWriterLock();
+
         private KdbPlusDatabaseClientPool _pool;
         private IDatabaseClient _innerClient;
 
@@ -82,19 +84,34 @@ namespace KpNet.KdbPlusClient
         {
             string connectionString = builder.ConnectionString;
 
-            if (!_pools.TryGetValue(connectionString, out _pool))
+            _locker.AcquireReaderLock(-1);
+
+            try
             {
-                lock (_locker)
+                if (!_pools.TryGetValue(connectionString, out _pool))
                 {
-                    if (!_pools.TryGetValue(connectionString, out _pool))
+                    LockCookie lockCookie = _locker.UpgradeToWriterLock(-1);
+
+                    try
                     {
-                        _pool = new KdbPlusDatabaseClientPool(builder);
-                        _pools.Add(connectionString, _pool);
+                        if (!_pools.TryGetValue(connectionString, out _pool))
+                        {
+                            _pool = new KdbPlusDatabaseClientPool(builder);
+                            _pools.Add(connectionString, _pool);
+                        }
+                    }
+                    finally
+                    {
+                        _locker.DowngradeFromWriterLock(ref lockCookie);
                     }
                 }
-            }
 
-            _innerClient = _pool.GetConnection();
+                _innerClient = _pool.GetConnection();
+            }
+            finally
+            {
+                _locker.ReleaseReaderLock();
+            }
         }
 
         #region IDatabaseClient Members
