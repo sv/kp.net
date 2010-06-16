@@ -132,13 +132,23 @@ namespace KpNet.KdbPlusClient
 
         private void DisposeConnection(IDatabaseClient connection)
         {
-            _connectionsCount--;
+            // after Clear method was called
+            // _connectionsCount may be 0
+            if (_connectionsCount > 0)
+            {
+                _connectionsCount--;
+                _createdConnections.Remove(connection);
+            }
+
             connection.Dispose();
-            _createdConnections.Remove(connection);
         }
 
         private bool ConnectionShouldBeDisposed(IDatabaseClient connection)
         {
+            // check if there was called Clear method
+            if(_connectionsCount == 0)
+                return true;
+
             return _loadBalanceTimeout > 0 && (DateTime.Now - connection.Created).TotalSeconds > _loadBalanceTimeout;
         }
 
