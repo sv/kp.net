@@ -162,14 +162,34 @@ namespace KpNet.KdbPlusClient
 
         public void Dispose()
         {
-            if (!_isDisposed && _createdConnections != null)
+            lock (_locker)
+            {
+                if (!_isDisposed && _createdConnections != null)
+                {
+                    Clear();
+
+                    _isDisposed = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Clears this connection pool.
+        /// </summary>
+        public void Clear()
+        {
+            ThrowIfDisposed();
+
+            lock (_locker)
             {
                 foreach (IDatabaseClient connection in _createdConnections)
                 {
                     connection.Dispose();
                 }
 
-                _isDisposed = true;
+                _createdConnections.Clear();
+                _connectionPool.Clear();
+                _connectionsCount = 0;
             }
         }
 
