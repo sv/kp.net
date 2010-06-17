@@ -26,6 +26,17 @@ namespace KpNet.KdbPlusClient
         /// <value>The creation date.</value>
         DateTime Created { get; }
 
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is connected.
+        /// </summary>
+        /// <value>
+        /// 	<c>true</c> if this instance is connected; otherwise, <c>false</c>.
+        /// </value>
+        bool IsConnected
+        { get;
+        }
+
         /// <summary>
         /// Executes the query and returns the result.
         /// </summary>

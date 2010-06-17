@@ -149,6 +149,10 @@ namespace KpNet.KdbPlusClient
             if(_connectionsCount == 0)
                 return true;
 
+            // dispose connection if it's broken
+            if(!connection.IsConnected)
+                return true;
+
             return _loadBalanceTimeout > 0 && (DateTime.Now - connection.Created).TotalSeconds > _loadBalanceTimeout;
         }
 

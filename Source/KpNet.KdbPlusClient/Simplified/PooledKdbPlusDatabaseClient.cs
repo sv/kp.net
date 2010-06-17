@@ -181,6 +181,20 @@ namespace KpNet.KdbPlusClient
             get { return _innerClient.Created; }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is connected.
+        /// </summary>
+        /// <value>
+        /// 	<c>true</c> if this instance is connected; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsConnected
+        {
+            get
+            {
+                return _innerClient.IsConnected;
+            }
+        }
+
 
         /// <summary>
         /// Executes the query and returns the result.
