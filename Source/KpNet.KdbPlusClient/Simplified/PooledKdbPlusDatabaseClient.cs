@@ -13,7 +13,7 @@ namespace KpNet.KdbPlusClient
         private static readonly SortedDictionary<string, KdbPlusDatabaseClientPool> _pools =
             new SortedDictionary<string, KdbPlusDatabaseClientPool>(StringComparer.OrdinalIgnoreCase);
 
-        private static readonly ReaderWriterLock _locker = new ReaderWriterLock();
+        private static readonly ReaderWriterLockSlim _locker = new ReaderWriterLockSlim();
 
         private KdbPlusDatabaseClientPool _pool;
         private IDatabaseClient _innerClient;
@@ -75,12 +75,12 @@ namespace KpNet.KdbPlusClient
         {
             try
             {
-                _locker.AcquireWriterLock(-1);
+                _locker.EnterWriteLock();
                 _pool.Clear();
             }
             finally
             {
-                _locker.ReleaseWriterLock();
+                _locker.ExitWriteLock();
             }
         }
 
@@ -100,34 +100,32 @@ namespace KpNet.KdbPlusClient
         {
             string connectionString = builder.ConnectionString;
 
-            _locker.AcquireReaderLock(-1);
+            _locker.EnterReadLock();
 
-            try
+            if (_pools.TryGetValue(connectionString, out _pool))
+                _locker.ExitReadLock();
+            
+            else
             {
-                if (!_pools.TryGetValue(connectionString, out _pool))
-                {
-                    LockCookie lockCookie = _locker.UpgradeToWriterLock(-1);
+                _locker.ExitReadLock();
+                _locker.EnterWriteLock();
 
-                    try
+                try
+                {
+                    if (!_pools.TryGetValue(connectionString, out _pool))
                     {
-                        if (!_pools.TryGetValue(connectionString, out _pool))
-                        {
-                            _pool = new KdbPlusDatabaseClientPool(builder);
-                            _pools.Add(connectionString, _pool);
-                        }
-                    }
-                    finally
-                    {
-                        _locker.DowngradeFromWriterLock(ref lockCookie);
+                        _pool = new KdbPlusDatabaseClientPool(builder);
+                        _pools.Add(connectionString, _pool);
                     }
                 }
+                finally
+                {
+                    _locker.ExitWriteLock();
+                }
 
-                _innerClient = _pool.GetConnection();
             }
-            finally
-            {
-                _locker.ReleaseReaderLock();
-            }
+
+            _innerClient = _pool.GetConnection();
         }
 
         #region IDatabaseClient Members
