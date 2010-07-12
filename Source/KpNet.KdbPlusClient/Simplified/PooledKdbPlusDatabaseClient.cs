@@ -99,32 +99,39 @@ namespace KpNet.KdbPlusClient
         private void GetClientFromPool(KdbPlusConnectionStringBuilder builder)
         {
             string connectionString = builder.ConnectionString;
-
-            _locker.EnterReadLock();
-
-            if (_pools.TryGetValue(connectionString, out _pool))
-                _locker.ExitReadLock();
             
-            else
+            // get existing pool
+            try
+            {
+                _locker.EnterReadLock();
+                if (_pools.TryGetValue(connectionString, out _pool))
+                {
+                    _innerClient = _pool.GetConnection();
+                    return;
+                }
+            }
+            finally
             {
                 _locker.ExitReadLock();
+            }
+                
+            // create new pool
+            try
+            {
                 _locker.EnterWriteLock();
 
-                try
+                if (!_pools.TryGetValue(connectionString, out _pool))
                 {
-                    if (!_pools.TryGetValue(connectionString, out _pool))
-                    {
-                        _pool = new KdbPlusDatabaseClientPool(builder);
-                        _pools.Add(connectionString, _pool);
-                    }
+                    _pool = new KdbPlusDatabaseClientPool(builder);
+                    _pools.Add(connectionString, _pool);
                 }
-                finally
-                {
-                    _locker.ExitWriteLock();
-                }
-
             }
-
+            finally
+            {
+                _locker.ExitWriteLock();
+            }
+            
+                     
             _innerClient = _pool.GetConnection();
         }
 

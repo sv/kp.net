@@ -100,6 +100,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="KdbPlusNull.cs" />
     <Compile Include="KdbPlusParameter.cs" />
     <Compile Include="KdbPlusParameterCollection.cs" />
     <Compile Include="Simplified\KdbPlusDatabaseClientPool.cs" />
