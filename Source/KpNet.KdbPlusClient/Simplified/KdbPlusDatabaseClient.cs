@@ -16,6 +16,12 @@ namespace KpNet.KdbPlusClient
         private TimeSpan _receiveTimeout = TimeSpan.FromMinutes(1);
         private TimeSpan _sendTimeout = TimeSpan.FromMinutes(1);
         private DateTime _created;
+        private readonly KdbPlusConnectionStringBuilder _builder;
+
+        public string ConnectionString
+        {
+            get { return _builder.ConnectionString; }
+        }
 
         static KdbPlusDatabaseClient()
         {
@@ -30,6 +36,8 @@ namespace KpNet.KdbPlusClient
         public KdbPlusDatabaseClient(KdbPlusConnectionStringBuilder builder)
         {
             Guard.ThrowIfNull(builder, "builder");
+
+            _builder = builder;
 
             Initialize(builder.Server, builder.Port, builder.UserID, builder.Password, builder.BufferSize);
         }

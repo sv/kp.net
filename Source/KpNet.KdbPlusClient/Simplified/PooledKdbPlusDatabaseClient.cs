@@ -310,6 +310,11 @@ namespace KpNet.KdbPlusClient
             return _innerClient.ReceiveMultipleQueryResult();
         }
 
+        public string ConnectionString
+        {
+            get { return _innerClient.ConnectionString; }
+        }
+
         #endregion
     }
 }

@@ -110,5 +110,7 @@ namespace KpNet.KdbPlusClient
         /// </summary>
         /// <returns></returns>
         IMultipleResult ReceiveMultipleQueryResult();
+
+        string ConnectionString { get; }
     }
 }
