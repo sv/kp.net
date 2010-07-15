@@ -3,18 +3,31 @@ using System.Data.Common;
 
 namespace KpNet.KdbPlusClient.Simplified
 {
+    /// <summary>
+    /// Round-robin client implementation.
+    /// This client choose one random connection location and work with it. 
+    /// </summary>
     public sealed class BalancingKdbPlusDatabaseClient : IDatabaseClient
     {
         private readonly IDatabaseClient _innerClient;
         private static int _index = -1;
-        private static readonly object _locker = new object();        
+        private static readonly object _locker = new object();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BalancingKdbPlusDatabaseClient"/> class.
+        /// Only one of connection strings will be used.
+        /// </summary>
+        /// <param name="builders">The connection string builders.</param>
         public BalancingKdbPlusDatabaseClient(KdbPlusConnectionStringBuilder[] builders)
         {
             Guard.ThrowIfNull(builders, "builders");
             _innerClient = CreateDatabaseClient(builders);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BalancingKdbPlusDatabaseClient"/> class.
+        /// </summary>
+        /// <param name="connectionStrings">The connection strings.</param>
         public BalancingKdbPlusDatabaseClient(string[] connectionStrings)
         {
             Guard.ThrowIfNull(connectionStrings, "connectionStrings");
