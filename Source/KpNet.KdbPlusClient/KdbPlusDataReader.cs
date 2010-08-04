@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
@@ -18,6 +19,7 @@ namespace KpNet.KdbPlusClient
         private int _currentRowIndex;
         private bool _isDisposed;
         private int _rowCount;
+        private List<Type> _types;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KdbPlusDataReader"/> class.
@@ -284,7 +286,7 @@ namespace KpNet.KdbPlusClient
 
         public override string GetDataTypeName(int i)
         {
-            throw new NotImplementedException();
+            return GetFieldType(i).Name;
         }
 
         public override IEnumerator GetEnumerator()
@@ -294,7 +296,9 @@ namespace KpNet.KdbPlusClient
 
         public override Type GetFieldType(int i)
         {
-            throw new NotImplementedException();
+            ValidateIndex(i);
+
+            return _types[i];
         }
 
         public override long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
@@ -447,6 +451,13 @@ namespace KpNet.KdbPlusClient
             _columnCount = _result.x.Length;
             _rowCount = ((Array) (_result.y[0])).Length;
             _currentRowIndex = -1;
+
+            _types = new List<Type>(_columnCount);
+
+            foreach (Array columnValues in _result.y)
+            {
+                _types.Add(columnValues.GetType().GetElementType());
+            }
         }
 
         private void ThrowIfDisposed()

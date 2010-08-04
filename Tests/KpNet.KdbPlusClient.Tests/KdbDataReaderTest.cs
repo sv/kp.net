@@ -50,6 +50,22 @@ namespace KpNet.KdbPlusClient.Tests
         }
 
         [Test]
+        public void ColumnTypeTest()
+        {
+            KdbPlusDataReader reader = GetReader();
+            Assert.AreEqual(typeof(int), reader.GetFieldType(0));
+            Assert.AreEqual(typeof(string), reader.GetFieldType(1));
+        }
+
+        [Test]
+        public void ColumnTypeNameTest()
+        {
+            KdbPlusDataReader reader = GetReader();
+            Assert.AreEqual("Int32", reader.GetDataTypeName(0));
+            Assert.AreEqual("String", reader.GetDataTypeName(1));
+        }
+
+        [Test]
         public void ColumnNamesTest()
         {
             KdbPlusDataReader reader = GetReader();
