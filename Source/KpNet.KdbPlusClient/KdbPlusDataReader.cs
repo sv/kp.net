@@ -42,7 +42,11 @@ namespace KpNet.KdbPlusClient
         /// </returns>
         public override bool HasRows
         {
-            get { return _rowCount > 0; }
+            get
+            {
+                ThrowIfDisposed();
+                return _rowCount > 0;
+            }
         }
 
         /// <summary>
@@ -74,7 +78,11 @@ namespace KpNet.KdbPlusClient
         /// <value></value>
         public override object this[int i]
         {
-            get { return GetValue(i); }
+            get
+            {
+                ThrowIfDisposed();
+                return GetValue(i);
+            }
         }
 
         /// <summary>
@@ -143,7 +151,7 @@ namespace KpNet.KdbPlusClient
 
             ValidateIndex(i);
 
-            return _result.x[i];
+            return GetNameInternal(i);
         }
 
         /// <summary>
@@ -170,6 +178,8 @@ namespace KpNet.KdbPlusClient
         /// </returns>
         public override int GetValues(object[] values)
         {
+            ThrowIfDisposed();
+
             if (values == null || values.Length < _columnCount)
                 throw new ArgumentException("Values parameter is incorrect.", "values");
 
@@ -226,6 +236,8 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override string GetString(int i)
         {
+            ThrowIfDisposed();
+
             return Convert.ToString(GetValue(i), DefaultCulture);
         }
 
@@ -286,6 +298,8 @@ namespace KpNet.KdbPlusClient
 
         public override string GetDataTypeName(int i)
         {
+            ThrowIfDisposed();
+
             return GetFieldType(i).Name;
         }
 
@@ -296,9 +310,11 @@ namespace KpNet.KdbPlusClient
 
         public override Type GetFieldType(int i)
         {
+            ThrowIfDisposed();
+
             ValidateIndex(i);
 
-            return _types[i];
+            return GetFieldTypeInternal(i);
         }
 
         public override long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
@@ -391,6 +407,8 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override DateTime GetDateTime(int i)
         {
+            ThrowIfDisposed();
+
             return (DateTime) GetValue(i);
         }
 
@@ -413,7 +431,16 @@ namespace KpNet.KdbPlusClient
 
         public override DataTable GetSchemaTable()
         {
-            throw new NotImplementedException();
+            ThrowIfDisposed();
+
+            DataTable table = new DataTable("SchemaTable", "http://kpnet.codeplex.com/2010/06/tables");
+
+            for(int i=0; i< _columnCount; i++)
+            {
+                table.Columns.Add(new DataColumn(GetNameInternal(i), GetFieldTypeInternal(i)));
+            }
+
+            return table.CreateDataReader().GetSchemaTable();
         }
 
         public override bool NextResult()
@@ -428,6 +455,16 @@ namespace KpNet.KdbPlusClient
             return Array.FindIndex(_result.x, s => s == name);
         }
 
+        private string GetNameInternal(int i)
+        {
+            return _result.x[i];
+        }
+
+        private Type GetFieldTypeInternal(int i)
+        {
+            return _types[i];
+        }
+
         private void ValidateIndex(int i)
         {
             if (i < 0 || i >= FieldCount)
@@ -438,7 +475,6 @@ namespace KpNet.KdbPlusClient
 
         private object GetCurrentRowValue(int i)
         {
-            ThrowIfDisposed();
             ValidateIndex(i);
 
             object value = c.at(_result.y[i], _currentRowIndex);
@@ -488,7 +524,12 @@ namespace KpNet.KdbPlusClient
             return new KdbPlusDataReader(new c.Flip(d));
         }
 
-        public static DbDataReader CreateReaderFromCollection(object result)
+        /// <summary>
+        /// Creates the reader from collection.
+        /// </summary>
+        /// <param name="result">The result.</param>
+        /// <returns></returns>
+        internal static DbDataReader CreateReaderFromCollection(object result)
         {
             var d = new c.Dict(new[] {"Result"}, new[] {result});
             return new KdbPlusDataReader(new c.Flip(d));

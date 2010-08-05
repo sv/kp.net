@@ -101,14 +101,22 @@ namespace Example
                     command.Parameters.Add(sym);
 
                     // get data from trade
-                    IDataReader reader = command.ExecuteReader();
-                    Console.WriteLine("Trade:");
-
-                    Console.WriteLine("{0}\t{1}\t{2}", reader.GetName(0), reader.GetName(1), reader.GetName(2));
-                    while (reader.Read())
+                    using (IDataReader reader = command.ExecuteReader())
                     {
-                        Console.WriteLine("{0}\t{1}\t{2}", reader.GetString(0), reader.GetDouble(1), reader.GetInt32(2));
+                        DataTable dtable = new DataTable();
+                        dtable.Load(reader);
+
+                        Console.WriteLine("Trade:");
+
+                        Console.WriteLine("{0}\t{1}\t{2}", dtable.Columns[0].ColumnName, dtable.Columns[1].ColumnName, dtable.Columns[2].ColumnName);
+
+                        for (int i = 0; i < dtable.Rows.Count; i++)
+                        {
+                            Console.WriteLine("{0}\t{1}\t{2}", dtable.Rows[i][0], dtable.Rows[i][1], dtable.Rows[i][2]);
+                        }
                     }
+
+                    
                 }
             }
             catch (KdbPlusException ex)
