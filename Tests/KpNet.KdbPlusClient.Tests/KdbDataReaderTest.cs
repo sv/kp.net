@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using Kdbplus;
 using NUnit.Framework;
 
@@ -94,6 +95,26 @@ namespace KpNet.KdbPlusClient.Tests
             Assert.AreEqual("zina", reader.GetValue(1).ToString());
 
             Assert.AreEqual(false, reader.Read());
+        }
+
+        [Test]
+        public void DataTableGetValueTest()
+        {
+            using(KdbPlusDataReader reader = GetReader())
+            {
+                DataTable table = new DataTable();
+                table.Load(reader);
+
+                Assert.AreEqual(1, table.Rows[0][0]);
+                Assert.AreEqual("sasha", table.Rows[0][1]);
+
+                Assert.AreEqual(2, table.Rows[1][0]);
+                Assert.AreEqual("masha", table.Rows[1][1]);
+
+                Assert.AreEqual(3, table.Rows[2][0]);
+                Assert.AreEqual("zina", table.Rows[2][1]);
+                
+            }
         }
 
         [Test]
