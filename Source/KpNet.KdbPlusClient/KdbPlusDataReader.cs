@@ -166,6 +166,8 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override object GetValue(int i)
         {
+            ThrowIfDisposed();
+
             return GetCurrentRowValue(i);
         }
 
@@ -204,8 +206,6 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override int GetInt32(int i)
         {
-            ThrowIfDisposed();
-
             return (int) GetValue(i);
         }
 
@@ -221,9 +221,7 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override long GetInt64(int i)
         {
-            ThrowIfDisposed();
-
-            return (Int64) Convert.ChangeType(GetValue(i), typeof (Int64), DefaultCulture);
+            return (Int64) GetValue(i);
         }
 
         /// <summary>
@@ -236,9 +234,7 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override string GetString(int i)
         {
-            ThrowIfDisposed();
-
-            return Convert.ToString(GetValue(i), DefaultCulture);
+            return (string)GetValue(i);
         }
 
         /// <summary>
@@ -274,8 +270,6 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override bool GetBoolean(int i)
         {
-            ThrowIfDisposed();
-
             return (bool) GetValue(i);
         }
 
@@ -291,8 +285,6 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override byte GetByte(int i)
         {
-            ThrowIfDisposed();
-
             return (byte) GetValue(i);
         }
 
@@ -334,8 +326,6 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override char GetChar(int i)
         {
-            ThrowIfDisposed();
-
             return (char) GetValue(i);
         }
 
@@ -351,8 +341,6 @@ namespace KpNet.KdbPlusClient
 
         public override short GetInt16(int i)
         {
-            ThrowIfDisposed();
-
             return (Int16)GetValue(i);
         }
 
@@ -368,8 +356,6 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override float GetFloat(int i)
         {
-            ThrowIfDisposed();
-
             return (float) GetValue(i);
         }
 
@@ -385,8 +371,6 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override double GetDouble(int i)
         {
-            ThrowIfDisposed();
-
             return (double) GetValue(i);
         }
 
@@ -407,8 +391,6 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override DateTime GetDateTime(int i)
         {
-            ThrowIfDisposed();
-
             return (DateTime) GetValue(i);
         }
 
@@ -424,8 +406,6 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override bool IsDBNull(int i)
         {
-            ThrowIfDisposed();
-
             return GetValue(i) == null;
         }
 
@@ -433,7 +413,7 @@ namespace KpNet.KdbPlusClient
         {
             ThrowIfDisposed();
 
-            DataTable table = new DataTable("SchemaTable", "http://kpnet.codeplex.com/2010/06/tables");
+            DataTable table = new DataTable();
 
             for(int i=0; i< _columnCount; i++)
             {

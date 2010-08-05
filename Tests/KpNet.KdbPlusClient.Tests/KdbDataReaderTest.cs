@@ -208,17 +208,17 @@ namespace KpNet.KdbPlusClient.Tests
 
             Assert.AreEqual(true, reader.Read());
 
-            Assert.AreEqual(1, reader.GetInt32(0), reader.GetInt64(0));
+            Assert.AreEqual(1, reader.GetInt32(0));
             Assert.AreEqual("sasha", reader.GetString(1));
 
             Assert.AreEqual(true, reader.Read());
 
-            Assert.AreEqual(2, reader.GetInt32(0), reader.GetInt64(0));
+            Assert.AreEqual(2, reader.GetInt32(0));
             Assert.AreEqual("masha", reader.GetString(1));
 
             Assert.AreEqual(true, reader.Read());
 
-            Assert.AreEqual(3, reader.GetInt32(0), reader.GetInt64(0));
+            Assert.AreEqual(3, reader.GetInt32(0));
             Assert.AreEqual("zina", reader.GetString(1));
 
             Assert.AreEqual(false, reader.Read());
