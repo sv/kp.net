@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Threading;
 
@@ -212,6 +213,17 @@ namespace KpNet.KdbPlusClient
             return _innerClient.ExecuteQuery(query, parameters);
         }
 
+        /// <summary>
+        /// Executes the query returns data table.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns>DataTable object</returns>
+        public DataTable ExecuteQueryAsDataTable(string query, params object[] parameters)
+        {
+            return _innerClient.ExecuteQueryAsDataTable(query, parameters);
+        }
+
 
         /// <summary>
         /// Executes the instruction that does not return results.
@@ -305,11 +317,24 @@ namespace KpNet.KdbPlusClient
         /// Receives the query result from server.
         /// </summary>
         /// <returns></returns>
+        public DataTable ReceiveQueryResultAsDataTable()
+        {
+            return _innerClient.ReceiveQueryResultAsDataTable();
+        }
+
+        /// <summary>
+        /// Receives the query result from server.
+        /// </summary>
+        /// <returns></returns>
         public IMultipleResult ReceiveMultipleQueryResult()
         {
             return _innerClient.ReceiveMultipleQueryResult();
         }
 
+        /// <summary>
+        /// Gets the connection string.
+        /// </summary>
+        /// <value>The connection string.</value>
         public string ConnectionString
         {
             get { return _innerClient.ConnectionString; }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.Text;
@@ -205,6 +206,17 @@ namespace KpNet.KdbPlusClient
             return CreateReader(Receive());
         }
 
+        /// <summary>
+        /// Receives the query result from server.
+        /// </summary>
+        /// <returns></returns>
+        public DataTable ReceiveQueryResultAsDataTable()
+        {
+            DbDataReader reader = ReceiveQueryResult();
+
+            return ConvertReaderToTable(reader);
+        }
+
 
         /// <summary>
         /// Receives multiple query results from server.
@@ -248,6 +260,19 @@ namespace KpNet.KdbPlusClient
             object result = DoNativeQuery(query, parameters);
 
             return CreateReader(result);
+        }
+
+        /// <summary>
+        /// Executes the query returns data table.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public DataTable ExecuteQueryAsDataTable(string query, params object[] parameters)
+        {
+            DbDataReader reader = ExecuteQuery(query, parameters);
+
+            return ConvertReaderToTable(reader);
         }
 
         /// <summary>
@@ -375,6 +400,17 @@ namespace KpNet.KdbPlusClient
                 return String.Empty;
 
             return String.Format(CultureInfo.InvariantCulture, "{0}:{1}", userName, password);
+        }
+
+        private static DataTable ConvertReaderToTable(DbDataReader reader)
+        {
+            using (reader)
+            {
+                DataTable table = new DataTable();
+
+                table.Load(reader);
+                return table;
+            }
         }
     }
 }

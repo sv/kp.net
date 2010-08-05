@@ -102,6 +102,18 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
         }
 
         [Test(Description = Constants.DescriptionMessage)]
+        public void ExecuteQueryAsDataTableTest()
+        {
+            using (IDatabaseClient client = CreateDatabaseClient())
+            {
+                CreateTradeAndInsertRow(client);
+
+                DataTable table = client.ExecuteQueryAsDataTable("select from trade");
+                CheckTrade(table);
+            }
+        }
+
+        [Test(Description = Constants.DescriptionMessage)]
         public void ExecuteNonQueryWithParamTest()
         {
             using (IDatabaseClient client = CreateDatabaseClient())
@@ -263,6 +275,24 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
             Assert.AreEqual("AIG", reader.GetString(0));
             Assert.AreEqual(10.75, reader.GetDouble(1));
             Assert.AreEqual(200, reader.GetInt32(2));
+        }
+
+        private static void CheckTrade(DataTable table)
+        {
+            Assert.AreEqual(3, table.Columns.Count);
+            Assert.AreEqual(1, table.Rows.Count);
+
+            Assert.AreEqual(typeof(string), table.Columns[0].DataType);
+            Assert.AreEqual(typeof(Double), table.Columns[1].DataType);
+            Assert.AreEqual(typeof(int), table.Columns[2].DataType);
+
+            Assert.AreEqual("sym", table.Columns[0].ColumnName);
+            Assert.AreEqual("price", table.Columns[1].ColumnName);
+            Assert.AreEqual("size", table.Columns[2].ColumnName);
+
+            Assert.AreEqual("AIG", table.Rows[0][0]);
+            Assert.AreEqual(10.75, table.Rows[0][1]);
+            Assert.AreEqual(200, table.Rows[0][2]);
         }
 
         private static void CheckTwoRows(IDataReader reader)

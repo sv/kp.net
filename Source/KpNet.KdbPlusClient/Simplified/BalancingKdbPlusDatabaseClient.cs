@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Data.Common;
 
 namespace KpNet.KdbPlusClient.Simplified
@@ -108,6 +109,11 @@ namespace KpNet.KdbPlusClient.Simplified
             return _innerClient.ExecuteQuery(query, parameters);
         }
 
+        public DataTable ExecuteQueryAsDataTable(string query, params object[] parameters)
+        {
+            return _innerClient.ExecuteQueryAsDataTable(query, parameters);
+        }
+
         public void ExecuteNonQuery(string query, params object[] parameters)
         {
             _innerClient.ExecuteNonQuery(query, parameters);
@@ -146,6 +152,11 @@ namespace KpNet.KdbPlusClient.Simplified
         public DbDataReader ReceiveQueryResult()
         {
             return _innerClient.ReceiveQueryResult();
+        }
+
+        public DataTable ReceiveQueryResultAsDataTable()
+        {
+            return _innerClient.ReceiveQueryResultAsDataTable();
         }
 
         public IMultipleResult ReceiveMultipleQueryResult()

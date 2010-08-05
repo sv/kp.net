@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Data.Common;
 
 namespace KpNet.KdbPlusClient
@@ -44,6 +45,14 @@ namespace KpNet.KdbPlusClient
         /// <param name="parameters">The query parameters</param>
         /// <returns>DbDataReader object</returns>
         DbDataReader ExecuteQuery(string query, params object[] parameters);
+
+        /// <summary>
+        /// Executes the query returns data table.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns>DataTable object</returns>
+        DataTable ExecuteQueryAsDataTable(string query, params object[] parameters);
 
         /// <summary>
         /// Executes the instruction that does not return results.
@@ -109,8 +118,18 @@ namespace KpNet.KdbPlusClient
         /// Receives the query result from server.
         /// </summary>
         /// <returns></returns>
+        DataTable ReceiveQueryResultAsDataTable();
+
+        /// <summary>
+        /// Receives the query result from server.
+        /// </summary>
+        /// <returns></returns>
         IMultipleResult ReceiveMultipleQueryResult();
 
+        /// <summary>
+        /// Gets the connection string.
+        /// </summary>
+        /// <value>The connection string.</value>
         string ConnectionString { get; }
     }
 }

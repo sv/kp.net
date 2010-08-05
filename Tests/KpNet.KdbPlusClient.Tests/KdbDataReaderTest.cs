@@ -105,6 +105,15 @@ namespace KpNet.KdbPlusClient.Tests
                 DataTable table = new DataTable();
                 table.Load(reader);
 
+                Assert.AreEqual(2, table.Columns.Count);
+                Assert.AreEqual(3, table.Rows.Count);
+
+                Assert.AreEqual("id", table.Columns[0].ColumnName);
+                Assert.AreEqual("name", table.Columns[1].ColumnName);
+
+                Assert.AreEqual(typeof(int), table.Columns[0].DataType);
+                Assert.AreEqual(typeof(string), table.Columns[1].DataType);
+
                 Assert.AreEqual(1, table.Rows[0][0]);
                 Assert.AreEqual("sasha", table.Rows[0][1]);
 
