@@ -170,7 +170,7 @@ namespace KpNet.KdbPlusClient
             object[] preparedParameters = null;
             _preparedText = _commandText;
 
-            bool anyParamsInQuery = _preparedText.Contains(KdbPlusParameter.ParameterNamePrifix);
+            bool anyParamsInQuery = _preparedText.Contains(KdbPlusParameter.ParameterNamePrefix);
             int parameterCount = _parameters.Count;
 
             if (anyParamsInQuery)

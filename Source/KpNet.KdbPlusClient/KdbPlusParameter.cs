@@ -7,7 +7,7 @@ namespace KpNet.KdbPlusClient
 {
     public sealed class KdbPlusParameter : DbParameter
     {
-        public const string ParameterNamePrifix = "@";
+        public const string ParameterNamePrefix = "@";
 
         private DbType _dbType = DbType.Object;
         private string _name;
@@ -120,8 +120,8 @@ namespace KpNet.KdbPlusClient
         {
             Guard.ThrowIfNullOrEmpty(parameterName, "parameterName");
 
-            if (!parameterName.StartsWith(ParameterNamePrifix))
-                throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "ParameterName  should start with {0}.",ParameterNamePrifix));
+            if (!parameterName.StartsWith(ParameterNamePrefix))
+                throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "ParameterName  should start with {0}.",ParameterNamePrefix));
         }
 
         private static DbType InferType(Object value)
