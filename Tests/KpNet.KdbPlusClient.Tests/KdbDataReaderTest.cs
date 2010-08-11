@@ -162,18 +162,18 @@ namespace KpNet.KdbPlusClient.Tests
 
             Assert.AreEqual(true, reader.Read());
 
-            Assert.AreEqual(1, Int32.Parse(reader["id"].ToString()));
-            Assert.AreEqual("sasha", reader["name"].ToString());
+            Assert.AreEqual(1, reader["id"]);
+            Assert.AreEqual("sasha", reader["name"]);
 
             Assert.AreEqual(true, reader.Read());
 
-            Assert.AreEqual(2, Int32.Parse(reader["id"].ToString()));
-            Assert.AreEqual("masha", reader["name"].ToString());
+            Assert.AreEqual(2, reader["id"]);
+            Assert.AreEqual("masha", reader["name"]);
 
             Assert.AreEqual(true, reader.Read());
 
-            Assert.AreEqual(3, Int32.Parse((reader)["id"].ToString()));
-            Assert.AreEqual("zina", (reader)["name"].ToString());
+            Assert.AreEqual(3, reader["id"]);
+            Assert.AreEqual("zina", reader["name"]);
 
             Assert.AreEqual(false, reader.Read());
         }
@@ -185,18 +185,18 @@ namespace KpNet.KdbPlusClient.Tests
 
             Assert.AreEqual(true, reader.Read());
 
-            Assert.AreEqual(1, Int32.Parse((reader)[0].ToString()));
-            Assert.AreEqual("sasha", (reader)[1].ToString());
+            Assert.AreEqual(1, reader[0]);
+            Assert.AreEqual("sasha", reader[1]);
 
             Assert.AreEqual(true, reader.Read());
 
-            Assert.AreEqual(2, Int32.Parse((reader)[0].ToString()));
-            Assert.AreEqual("masha", (reader)[1].ToString());
+            Assert.AreEqual(2, reader[0]);
+            Assert.AreEqual("masha", reader[1]);
 
             Assert.AreEqual(true, reader.Read());
 
-            Assert.AreEqual(3, Int32.Parse((reader)[0].ToString()));
-            Assert.AreEqual("zina", (reader)[1].ToString());
+            Assert.AreEqual(3, reader[0]);
+            Assert.AreEqual("zina", reader[1]);
 
             Assert.AreEqual(false, reader.Read());
         }
