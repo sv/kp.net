@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Globalization;
 using Kdbplus;
 
 namespace KpNet.KdbPlusClient
@@ -13,13 +12,13 @@ namespace KpNet.KdbPlusClient
     /// </summary>
     internal sealed class KdbPlusDataReader : DbDataReader
     {
-        private static readonly CultureInfo DefaultCulture = CultureInfo.InvariantCulture;
         private readonly c.Flip _result;
         private int _columnCount;
         private int _currentRowIndex;
         private bool _isDisposed;
         private int _rowCount;
         private List<Type> _types;
+        private SortedDictionary<string, int> _nameIndexMapping;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KdbPlusDataReader"/> class.
@@ -432,7 +431,7 @@ namespace KpNet.KdbPlusClient
         {
             Guard.ThrowIfNullOrEmpty(name, "name");
 
-            return Array.FindIndex(_result.x, s => s == name);
+            return _nameIndexMapping[name];
         }
 
         private string GetNameInternal(int i)
@@ -442,6 +441,7 @@ namespace KpNet.KdbPlusClient
 
         private Type GetFieldTypeInternal(int i)
         {
+            InitTypesIfNecessary();
             return _types[i];
         }
 
@@ -465,8 +465,21 @@ namespace KpNet.KdbPlusClient
         private void InitIndexes()
         {
             _columnCount = _result.x.Length;
+            
+            _nameIndexMapping = new SortedDictionary<string, int>();
+            for (int i = 0; i < _columnCount; i++)
+            {
+                _nameIndexMapping.Add(GetNameInternal(i),i);
+            }
+
             _rowCount = ((Array) (_result.y[0])).Length;
             _currentRowIndex = -1;
+        }
+
+        private void InitTypesIfNecessary()
+        {
+            if (_types != null)
+                return;
 
             _types = new List<Type>(_columnCount);
 

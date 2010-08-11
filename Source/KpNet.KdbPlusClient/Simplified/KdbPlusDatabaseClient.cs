@@ -13,6 +13,8 @@ namespace KpNet.KdbPlusClient
     /// </summary>
     public sealed class KdbPlusDatabaseClient : IDatabaseClient
     {
+        private static Type _dictType = typeof (c.Dict);
+        private static Type _flipType = typeof(c.Flip);
         private c _client;
         private TimeSpan _receiveTimeout = TimeSpan.FromMinutes(1);
         private TimeSpan _sendTimeout = TimeSpan.FromMinutes(1);
@@ -311,8 +313,12 @@ namespace KpNet.KdbPlusClient
 
             Type resultType = result.GetType();
 
-            // table is returned from k+
-            if (resultType.IsAssignableFrom(typeof(c.Dict)) || resultType.IsAssignableFrom(typeof(c.Flip)))
+            // table is returned from k+ as flip
+            if (resultType == _flipType)
+                return new KdbPlusDataReader((c.Flip)result);
+
+            // result returned as dict
+            if (resultType == _dictType)
                 return new KdbPlusDataReader(c.td(result));
 
             // collection is returned
