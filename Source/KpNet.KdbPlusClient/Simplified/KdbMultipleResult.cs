@@ -29,9 +29,12 @@ namespace KpNet.KdbPlusClient
                 object[] temp = tables[i] as object[];
                 if (temp != null && temp.Length == 0)
                 {
-                    continue;
+                    tableReaders[tableNames[i]] = KdbPlusDataReader.CreateEmptyReader();
                 }
-                tableReaders[tableNames[i]] = new KdbPlusDataReader(c.td(tables[i]));
+                else
+                {
+                    tableReaders[tableNames[i]] = new KdbPlusDataReader(c.td(tables[i]));    
+                }
             }
 
             return new DataReaderCollection(tableReaders);
