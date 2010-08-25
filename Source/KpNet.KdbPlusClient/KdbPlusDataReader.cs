@@ -503,7 +503,7 @@ namespace KpNet.KdbPlusClient
         /// <returns></returns>
         internal static DbDataReader CreateEmptyReader()
         {
-            return CreateReaderFromPrimitive(null);
+            return CreateReaderFromCollection(new object[0]);
         }
 
         /// <summary>
