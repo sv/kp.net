@@ -7,7 +7,7 @@ namespace KpNet.KdbPlusClient
     /// <summary>
     /// DbException implementation for KDB+ provider.
     /// </summary>
-    public sealed class KdbPlusException : DbException
+    public class KdbPlusException : DbException
     {
         private readonly string _query;
 

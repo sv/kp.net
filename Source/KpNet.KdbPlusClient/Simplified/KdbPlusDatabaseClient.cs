@@ -3,7 +3,9 @@ using System.Collections;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
+using System.IO;
 using System.Text;
+using System.Threading;
 using Kdbplus;
 
 namespace KpNet.KdbPlusClient
@@ -13,13 +15,15 @@ namespace KpNet.KdbPlusClient
     /// </summary>
     public sealed class KdbPlusDatabaseClient : IDatabaseClient
     {
-        private static Type _dictType = typeof (c.Dict);
-        private static Type _flipType = typeof(c.Flip);
+        private static readonly Type _dictType = typeof (c.Dict);
+        private static readonly Type _flipType = typeof(c.Flip);
         private c _client;
         private TimeSpan _receiveTimeout = TimeSpan.FromMinutes(1);
         private TimeSpan _sendTimeout = TimeSpan.FromMinutes(1);
         private DateTime _created;
         private readonly KdbPlusConnectionStringBuilder _builder;
+        private bool _canBeReused = true;
+        private bool _isDisposed;
 
         public string ConnectionString
         {
@@ -68,28 +72,6 @@ namespace KpNet.KdbPlusClient
             Initialize(server, port, userId, password, bufferSize);
         }
 
-        private void Initialize(string server, int port, string userId, string password, int bufferSize)
-        {
-            Guard.ThrowIfNullOrEmpty(server, "server");
-
-            if (port <= 0)
-                throw new ArgumentException(String.Concat("Invalid port:", port));
-
-            try
-            {
-                _client = new c(server, port, FormatUserName(userId, password), bufferSize)
-                              {
-                                  SendTimeout = ToMilliSeconds(_sendTimeout),
-                                  ReceiveTimeout = ToMilliSeconds(_receiveTimeout)
-                              };
-                _created = DateTime.Now;
-            }
-            catch (Exception ex)
-            {
-                throw new KdbPlusException("Failed to connect to server.", ex);
-            }
-        }
-
         #region IDatabaseClient Members
 
 
@@ -102,6 +84,8 @@ namespace KpNet.KdbPlusClient
         /// <param name="parameters">The query parameters</param>
         public void ExecuteOneWayNonQuery(string query, params object[] parameters)
         {
+            CheckInnerState();
+
             Guard.ThrowIfNullOrEmpty(query, "query");
 
             DoNativeOneWayQuery(query, parameters);
@@ -117,6 +101,8 @@ namespace KpNet.KdbPlusClient
         /// <returns></returns>
         public T ExecuteScalar<T>(string query, params object[] parameters) where T : struct
         {
+            CheckInnerState();
+
             object result = DoNativeQuery(query, parameters);
             return GetTypedResult<T>(result);
         }
@@ -129,6 +115,8 @@ namespace KpNet.KdbPlusClient
         /// <returns></returns>
         public object ExecuteScalar(string query, params object[] parameters)
         {
+            CheckInnerState();
+
             return DoNativeQuery(query, parameters);
         }
 
@@ -141,6 +129,7 @@ namespace KpNet.KdbPlusClient
             get { return _sendTimeout; }
             set
             {
+                CheckInnerState();
                 _client.SendTimeout = ToMilliSeconds(value);
                 _sendTimeout = value;
             }
@@ -155,6 +144,7 @@ namespace KpNet.KdbPlusClient
             get { return _receiveTimeout; }
             set
             {
+                CheckInnerState();
                 _client.ReceiveTimeout = ToMilliSeconds(value);
                 _receiveTimeout = value;
             }
@@ -168,6 +158,8 @@ namespace KpNet.KdbPlusClient
         /// <returns></returns>
         public IMultipleResult ExecuteQueryWithMultipleResult(string query, params object[] parameters)
         {
+            CheckInnerState();
+
             object queryResult = DoNativeQuery(query, parameters);
 
             return new KdbMultipleResult((c.Dict) queryResult);
@@ -179,9 +171,20 @@ namespace KpNet.KdbPlusClient
         /// <returns></returns>
         public object Receive()
         {
+            CheckInnerState();
+
             try
             {
                 return _client.k();
+            }
+            catch (IOException ex)
+            {
+                return HandleIOException(ex);
+            }
+            catch (ThreadAbortException)
+            {
+                MarkAsNotReusable();
+                throw;
             }
             catch (Exception ex)
             {
@@ -248,7 +251,7 @@ namespace KpNet.KdbPlusClient
         /// </value>
         public bool IsConnected
         {
-            get { return _client.Connected; }
+            get { return _canBeReused && _client.Connected; }
         }
 
         /// <summary>
@@ -259,6 +262,8 @@ namespace KpNet.KdbPlusClient
         /// <returns>DbDataReader object</returns>
         public DbDataReader ExecuteQuery(string query, params object[] parameters)
         {
+            CheckInnerState();
+
             object result = DoNativeQuery(query, parameters);
 
             return CreateReader(result);
@@ -272,6 +277,8 @@ namespace KpNet.KdbPlusClient
         /// <returns></returns>
         public DataTable ExecuteQueryAsDataTable(string query, params object[] parameters)
         {
+            CheckInnerState();
+
             DbDataReader reader = ExecuteQuery(query, parameters);
 
             return ConvertReaderToTable(reader);
@@ -284,6 +291,8 @@ namespace KpNet.KdbPlusClient
         /// <param name="parameters">The query parameters</param>
         public void ExecuteNonQuery(string query, params object[] parameters)
         {
+            CheckInnerState();
+
             DoNativeQuery(query, parameters);
         }
 
@@ -292,11 +301,38 @@ namespace KpNet.KdbPlusClient
         /// </summary>
         public void Dispose()
         {
-            if (_client != null)
+            if (!_isDisposed && _client != null)
+            {
                 _client.Close();
+                _isDisposed = true;
+            }
         }
 
         #endregion
+
+
+
+        private void Initialize(string server, int port, string userId, string password, int bufferSize)
+        {
+            Guard.ThrowIfNullOrEmpty(server, "server");
+
+            if (port <= 0)
+                throw new ArgumentException(String.Concat("Invalid port:", port));
+
+            try
+            {
+                _client = new c(server, port, FormatUserName(userId, password), bufferSize)
+                {
+                    SendTimeout = ToMilliSeconds(_sendTimeout),
+                    ReceiveTimeout = ToMilliSeconds(_receiveTimeout)
+                };
+                _created = DateTime.Now;
+            }
+            catch (Exception ex)
+            {
+                throw new KdbPlusFatalException("Failed to connect to server.", ex);
+            }
+        }
 
         private static T GetTypedResult<T>(object result)
         {
@@ -349,6 +385,15 @@ namespace KpNet.KdbPlusClient
 
                 return _client.k(query, parameters);
             }
+            catch (IOException ex)
+            {
+                return HandleIOException(ex);
+            }
+            catch (ThreadAbortException)
+            {
+                MarkAsNotReusable();
+                throw;
+            }
             catch (Exception exc)
             {
                 throw new KdbPlusException("Query execution exception.", query, exc);
@@ -381,10 +426,40 @@ namespace KpNet.KdbPlusClient
 
                 _client.ks(query, parameters);
             }
+            catch (IOException ex)
+            {
+                HandleIOException(ex);
+            }
+            catch (ThreadAbortException)
+            {
+                MarkAsNotReusable();
+                throw;
+            }
             catch (Exception exc)
             {
                 throw new KdbPlusException("Query execution exception.", query, exc);
             }
+        }
+
+        private void CheckInnerState()
+        {
+            if(!_canBeReused)
+                throw new InvalidOperationException("Connection can't be reused.");
+
+            if(_isDisposed)
+                throw new ObjectDisposedException("Already disposed.");
+        }
+
+        private object HandleIOException(IOException ex)
+        {
+            MarkAsNotReusable();
+            throw new KdbPlusFatalException("Failed to receive results from server.", ex);
+        }
+
+        private void MarkAsNotReusable()
+        {
+            _canBeReused = false;
+            Dispose();
         }
 
         private static object GetResultFromFlip(object value)
