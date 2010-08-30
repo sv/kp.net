@@ -18,7 +18,7 @@ namespace KpNet.KdbPlusClient
         private bool _isDisposed;
         private int _rowCount;
         private List<Type> _types;
-        private SortedDictionary<string, int> _nameIndexMapping;
+        private Dictionary<string, int> _nameIndexMapping;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KdbPlusDataReader"/> class.
@@ -471,7 +471,7 @@ namespace KpNet.KdbPlusClient
         {
             _columnCount = _result.x.Length;
             
-            _nameIndexMapping = new SortedDictionary<string, int>(StringComparer.Ordinal);
+            _nameIndexMapping = new Dictionary<string, int>(StringComparer.Ordinal);
             for (int i = 0; i < _columnCount; i++)
             {
                 _nameIndexMapping.Add(GetNameInternal(i),i);
