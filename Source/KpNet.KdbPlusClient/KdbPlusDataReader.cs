@@ -99,7 +99,7 @@ namespace KpNet.KdbPlusClient
                 {
                     throw new ArgumentException("Can't locate provided column name.", "name");
                 }
-                return (this)[index];
+                return GetCurrentRowValueInternal(index);
             }
         }
 
@@ -457,16 +457,21 @@ namespace KpNet.KdbPlusClient
         {
             ValidateIndex(i);
 
-            object value = c.at(_result.y[i], _currentRowIndex);
+            object value = GetCurrentRowValueInternal(i);
 
             return value;
+        }
+
+        private object GetCurrentRowValueInternal(int i)
+        {
+            return c.at(_result.y[i], _currentRowIndex);
         }
 
         private void InitIndexes()
         {
             _columnCount = _result.x.Length;
             
-            _nameIndexMapping = new SortedDictionary<string, int>();
+            _nameIndexMapping = new SortedDictionary<string, int>(StringComparer.Ordinal);
             for (int i = 0; i < _columnCount; i++)
             {
                 _nameIndexMapping.Add(GetNameInternal(i),i);
