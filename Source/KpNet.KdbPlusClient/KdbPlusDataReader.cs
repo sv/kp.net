@@ -79,7 +79,6 @@ namespace KpNet.KdbPlusClient
         {
             get
             {
-                ThrowIfDisposed();
                 return GetValue(i);
             }
         }
@@ -92,14 +91,12 @@ namespace KpNet.KdbPlusClient
         {
             get
             {
-                ThrowIfDisposed();
-
                 int index = GetIndexByName(name);
                 if (index == -1)
                 {
                     throw new ArgumentException("Can't locate provided column name.", "name");
                 }
-                return GetCurrentRowValueInternal(index);
+                return GetCurrentRowValue(index);
             }
         }
 
@@ -146,8 +143,6 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override string GetName(int i)
         {
-            ThrowIfDisposed();
-
             ValidateIndex(i);
 
             return GetNameInternal(i);
@@ -165,8 +160,6 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override object GetValue(int i)
         {
-            ThrowIfDisposed();
-
             return GetCurrentRowValue(i);
         }
 
@@ -179,8 +172,6 @@ namespace KpNet.KdbPlusClient
         /// </returns>
         public override int GetValues(object[] values)
         {
-            ThrowIfDisposed();
-
             if (values == null || values.Length < _columnCount)
                 throw new ArgumentException("Values parameter is incorrect.", "values");
 
@@ -242,6 +233,7 @@ namespace KpNet.KdbPlusClient
         public override void Close()
         {
             _isDisposed = true;
+            _currentRowIndex = -1;
         }
 
         /// <summary>
@@ -254,8 +246,6 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override int GetOrdinal(string name)
         {
-            ThrowIfDisposed();
-
             return GetIndexByName(name);
         }
 
@@ -289,9 +279,7 @@ namespace KpNet.KdbPlusClient
 
         public override string GetDataTypeName(int i)
         {
-            ThrowIfDisposed();
-
-            return GetFieldType(i).Name;
+           return GetFieldType(i).Name;
         }
 
         public override IEnumerator GetEnumerator()
@@ -301,8 +289,6 @@ namespace KpNet.KdbPlusClient
 
         public override Type GetFieldType(int i)
         {
-            ThrowIfDisposed();
-
             ValidateIndex(i);
 
             return GetFieldTypeInternal(i);
@@ -410,8 +396,6 @@ namespace KpNet.KdbPlusClient
 
         public override DataTable GetSchemaTable()
         {
-            ThrowIfDisposed();
-
             DataTable table = new DataTable();
 
             for(int i=0; i< _columnCount; i++)
@@ -454,15 +438,6 @@ namespace KpNet.KdbPlusClient
         }
 
         private object GetCurrentRowValue(int i)
-        {
-            ValidateIndex(i);
-
-            object value = GetCurrentRowValueInternal(i);
-
-            return value;
-        }
-
-        private object GetCurrentRowValueInternal(int i)
         {
             return c.at(_result.y[i], _currentRowIndex);
         }
