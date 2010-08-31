@@ -123,4 +123,13 @@
   <data name="NotSupportedInKdbPlus" xml:space="preserve">
     <value>The requested feature is not supported in KDB+.</value>
   </data>
+	<data name="ColumnNotFoundMessage">
+		<value><![CDATA[Can't locate provided column name.]]></value>
+	</data>
+	<data name="InvalidArrayMessage">
+		<value xml:space="preserve">Values parameter is incorrect.</value>
+	</data>
+	<data name="ArgumentOutOfRangeMessage">
+		<value xml:space="preserve">Provided argument is out of range.</value>
+	</data>
 </root>

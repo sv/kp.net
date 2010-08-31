@@ -94,9 +94,9 @@ namespace KpNet.KdbPlusClient
                 int index = GetIndexByName(name);
                 if (index == -1)
                 {
-                    throw new ArgumentException("Can't locate provided column name.", "name");
+                    throw new ArgumentException(Resources.ColumnNotFoundMessage, "name");
                 }
-                return GetCurrentRowValue(index);
+                return GetValue(index);
             }
         }
 
@@ -160,7 +160,7 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override object GetValue(int i)
         {
-            return GetCurrentRowValue(i);
+            return c.at(_result.y[i], _currentRowIndex);
         }
 
         /// <summary>
@@ -173,13 +173,13 @@ namespace KpNet.KdbPlusClient
         public override int GetValues(object[] values)
         {
             if (values == null || values.Length < _columnCount)
-                throw new ArgumentException("Values parameter is incorrect.", "values");
+                throw new ArgumentException(Resources.InvalidArrayMessage, "values");
 
             int minVal = Math.Min(values.Length, _columnCount);
 
             for (int i = 0; i < minVal; i++)
             {
-                values[i] = GetCurrentRowValue(i);
+                values[i] = GetValue(i);
             }
             return minVal;
         }
@@ -433,13 +433,8 @@ namespace KpNet.KdbPlusClient
         {
             if (i < 0 || i >= FieldCount)
             {
-                throw new ArgumentOutOfRangeException("i", "Provided argument is out of range.");
+                throw new ArgumentOutOfRangeException("i", Resources.ArgumentOutOfRangeMessage);
             }
-        }
-
-        private object GetCurrentRowValue(int i)
-        {
-            return c.at(_result.y[i], _currentRowIndex);
         }
 
         private void InitIndexes()
