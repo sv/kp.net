@@ -56,9 +56,6 @@ namespace KpNet.KdbPlusClient
             _loadBalanceTimeout = loadBalanceTimeout;
 
             InitializeConnectionPool();
-
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
-            AppDomain.CurrentDomain.ProcessExit += CurrentDomainProcessExit;
         }
 
         /// <summary>
@@ -160,16 +157,6 @@ namespace KpNet.KdbPlusClient
         {
             if (_isDisposed)
                 throw new ObjectDisposedException("Already disposed.");
-        }
-
-        void CurrentDomainProcessExit(object sender, EventArgs e)
-        {
-            Dispose();
-        }
-
-        void CurrentDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            Dispose();
         }
 
         #region IDisposable Members

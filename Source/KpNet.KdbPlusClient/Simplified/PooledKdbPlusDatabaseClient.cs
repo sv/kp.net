@@ -11,10 +11,10 @@ namespace KpNet.KdbPlusClient
     /// </summary>
     public sealed class PooledKdbPlusDatabaseClient : IDatabaseClient
     {
-        private static readonly SortedDictionary<string, KdbPlusDatabaseClientPool> _pools =
-            new SortedDictionary<string, KdbPlusDatabaseClientPool>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, KdbPlusDatabaseClientPool> _pools =
+            new Dictionary<string, KdbPlusDatabaseClientPool>(StringComparer.OrdinalIgnoreCase);
 
-        private static readonly ReaderWriterLockSlim _locker = new ReaderWriterLockSlim();
+        private static readonly ReaderWriterLock _locker = new ReaderWriterLock();
 
         private KdbPlusDatabaseClientPool _pool;
         private IDatabaseClient _innerClient;
@@ -76,12 +76,12 @@ namespace KpNet.KdbPlusClient
         {
             try
             {
-                _locker.EnterWriteLock();
+                _locker.AcquireWriterLock(-1);
                 _pool.Clear();
             }
             finally
             {
-                _locker.ExitWriteLock();
+                _locker.ReleaseWriterLock();
             }
         }
 
@@ -104,7 +104,7 @@ namespace KpNet.KdbPlusClient
             // get existing pool
             try
             {
-                _locker.EnterReadLock();
+                _locker.AcquireReaderLock(-1);
                 if (_pools.TryGetValue(connectionString, out _pool))
                 {
                     _innerClient = _pool.GetConnection();
@@ -113,13 +113,13 @@ namespace KpNet.KdbPlusClient
             }
             finally
             {
-                _locker.ExitReadLock();
+                _locker.ReleaseReaderLock();
             }
                 
             // create new pool
             try
             {
-                _locker.EnterWriteLock();
+                _locker.AcquireWriterLock(-1);
 
                 if (!_pools.TryGetValue(connectionString, out _pool))
                 {
@@ -129,7 +129,7 @@ namespace KpNet.KdbPlusClient
             }
             finally
             {
-                _locker.ExitWriteLock();
+                _locker.ReleaseWriterLock();
             }
             
                      
