@@ -1,15 +1,15 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{561B9395-37F0-4D71-B545-A5B7A46C4418}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{0A5901E6-59E4-4EFF-A13C-5A88B9AF1C26}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Example", "Example", "{62D108FB-C175-4FD4-832E-BB20276DE13A}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KpNet.KdbPlusClient", "Source\KpNet.KdbPlusClient\KpNet.KdbPlusClient.csproj", "{66C3F020-63A3-4B45-B58A-3171D5482CBB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KpNet.KdbPlusClient.Tests", "Tests\KpNet.KdbPlusClient.Tests\KpNet.KdbPlusClient.Tests.csproj", "{9CAD7E2C-214D-4318-8B2A-981E7F9C10E7}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Example", "Example", "{62D108FB-C175-4FD4-832E-BB20276DE13A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example", "Example\Example.csproj", "{4BF8573F-7950-4730-A004-602C4E8AD670}"
 EndProject

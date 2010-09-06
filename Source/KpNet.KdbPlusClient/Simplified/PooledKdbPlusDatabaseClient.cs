@@ -17,7 +17,7 @@ namespace KpNet.KdbPlusClient
         private static readonly ReaderWriterLock _locker = new ReaderWriterLock();
 
         private KdbPlusDatabaseClientPool _pool;
-        private IDatabaseClient _innerClient;
+        private KdbPlusDatabaseClient _innerClient;
 
         /// <summary>
         /// Gets the inner client.
