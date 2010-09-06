@@ -14,8 +14,8 @@ namespace KpNet.KdbPlusClient
         private readonly int _maxPoolSize;
         private readonly int _minPoolSize;
         private readonly int _loadBalanceTimeout;
-        private List<IDatabaseClient> _connectionPool;
-        private List<IDatabaseClient> _createdConnections;
+        private List<KdbPlusDatabaseClient> _connectionPool;
+        private List<KdbPlusDatabaseClient> _createdConnections;
         private int _connectionsCount;
         private bool _isDisposed;
 
@@ -77,7 +77,7 @@ namespace KpNet.KdbPlusClient
         /// Gets the connection from pool.
         /// </summary>
         /// <returns></returns>
-        public IDatabaseClient GetConnection()
+        public KdbPlusDatabaseClient GetConnection()
         {
             ThrowIfDisposed();
 
@@ -110,7 +110,7 @@ namespace KpNet.KdbPlusClient
         /// Returns the connection to pool.
         /// </summary>
         /// <param name="connection">The connection.</param>
-        public void ReturnConnectionToPool(IDatabaseClient connection)
+        public void ReturnConnectionToPool(KdbPlusDatabaseClient connection)
         {
             ThrowIfDisposed();
 
@@ -127,25 +127,15 @@ namespace KpNet.KdbPlusClient
             }
         }
 
-        private void DisposeConnection(IDatabaseClient connection)
+        private void DisposeConnection(KdbPlusDatabaseClient connection)
         {
-            // after Clear method was called
-            // _connectionsCount may be 0
-            if (_connectionsCount > 0)
-            {
-                _connectionsCount--;
-                _createdConnections.Remove(connection);
-            }
-
+            _connectionsCount--;
+            _createdConnections.Remove(connection);
             connection.Dispose();
         }
 
-        private bool ConnectionShouldBeDisposed(IDatabaseClient connection)
+        private bool ConnectionShouldBeDisposed(KdbPlusDatabaseClient connection)
         {
-            // check if there was called Clear method
-            if(_connectionsCount == 0)
-                return true;
-
             // dispose connection if it's broken
             if(!connection.IsConnected)
                 return true;
@@ -183,14 +173,10 @@ namespace KpNet.KdbPlusClient
 
             lock (_locker)
             {
-                foreach (IDatabaseClient connection in _createdConnections)
+                foreach (KdbPlusDatabaseClient connection in _createdConnections)
                 {
-                    connection.Dispose();
+                    connection.IsConnected = false;
                 }
-
-                _createdConnections.Clear();
-                _connectionPool.Clear();
-                _connectionsCount = 0;
             }
         }
 
@@ -198,8 +184,8 @@ namespace KpNet.KdbPlusClient
 
         private void InitializeConnectionPool()
         {
-            _connectionPool = new List<IDatabaseClient>(_maxPoolSize);
-            _createdConnections = new List<IDatabaseClient>(_maxPoolSize);
+            _connectionPool = new List<KdbPlusDatabaseClient>(_maxPoolSize);
+            _createdConnections = new List<KdbPlusDatabaseClient>(_maxPoolSize);
 
             for (int i = 0; i < _minPoolSize; i++)
             {
@@ -207,17 +193,17 @@ namespace KpNet.KdbPlusClient
             }
         }
 
-        private IDatabaseClient CreateNewConnection()
+        private KdbPlusDatabaseClient CreateNewConnection()
         {
-            IDatabaseClient connection = new KdbPlusDatabaseClient(_builder);
+            KdbPlusDatabaseClient connection = new KdbPlusDatabaseClient(_builder);
             _connectionsCount++;
             _createdConnections.Add(connection);
             return connection;
         }
 
-        private IDatabaseClient GetFreeConnection()
+        private KdbPlusDatabaseClient GetFreeConnection()
         {
-            IDatabaseClient connection = _connectionPool[0];
+            KdbPlusDatabaseClient connection = _connectionPool[0];
             _connectionPool.RemoveAt(0);
 
             if (ConnectionShouldBeDisposed(connection))

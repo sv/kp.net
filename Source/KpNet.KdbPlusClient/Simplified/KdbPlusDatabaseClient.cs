@@ -252,6 +252,7 @@ namespace KpNet.KdbPlusClient
         public bool IsConnected
         {
             get { return _canBeReused && _client.Connected; }
+            set { _canBeReused = value; }
         }
 
         /// <summary>
