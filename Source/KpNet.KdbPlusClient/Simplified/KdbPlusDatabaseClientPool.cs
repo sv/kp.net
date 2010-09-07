@@ -166,6 +166,8 @@ namespace KpNet.KdbPlusClient
                     {
                         connection.Dispose();
                     }
+
+                    _isDisposed = true;
                 }
             }
         }
