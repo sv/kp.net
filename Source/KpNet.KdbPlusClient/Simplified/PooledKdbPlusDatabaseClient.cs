@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
+using KpNet.KdbPlusClient.Simplified;
 
 namespace KpNet.KdbPlusClient
 {
@@ -11,12 +12,12 @@ namespace KpNet.KdbPlusClient
     /// </summary>
     public sealed class PooledKdbPlusDatabaseClient : IDatabaseClient
     {
-        private static readonly Dictionary<string, KdbPlusDatabaseClientPool> _pools =
-            new Dictionary<string, KdbPlusDatabaseClientPool>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<KdbPlusConnectionStringBuilder, IKdbPlusDatabaseClientPool> _pools =
+            new Dictionary<KdbPlusConnectionStringBuilder, IKdbPlusDatabaseClientPool>();
 
         private static readonly ReaderWriterLock _locker = new ReaderWriterLock();
 
-        private KdbPlusDatabaseClientPool _pool;
+        private IKdbPlusDatabaseClientPool _pool;
         private KdbPlusDatabaseClient _innerClient;
 
         /// <summary>
@@ -35,7 +36,7 @@ namespace KpNet.KdbPlusClient
         /// Gets the connection pools.
         /// </summary>
         /// <value>The pools.</value>
-        internal static IDictionary<string, KdbPlusDatabaseClientPool> Pools
+        internal static IDictionary<KdbPlusConnectionStringBuilder, IKdbPlusDatabaseClientPool> Pools
         {
             get
             {
@@ -69,6 +70,13 @@ namespace KpNet.KdbPlusClient
             else _innerClient = new KdbPlusDatabaseClient(builder);
         }
 
+        public PooledKdbPlusDatabaseClient(IKdbPlusDatabaseClientPool pool)
+        {
+            Guard.ThrowIfNull(pool, "pool");
+            _pool = pool;
+            _innerClient = _pool.GetConnection();
+        }
+
         /// <summary>
         /// Clears the connection pool.
         /// </summary>
@@ -89,7 +97,7 @@ namespace KpNet.KdbPlusClient
         /// Gets the connection pool.
         /// </summary>
         /// <value>The pool.</value>
-        internal KdbPlusDatabaseClientPool Pool
+        internal IKdbPlusDatabaseClientPool Pool
         {
             get
             {
@@ -99,13 +107,11 @@ namespace KpNet.KdbPlusClient
 
         private void GetClientFromPool(KdbPlusConnectionStringBuilder builder)
         {
-            string connectionString = builder.ConnectionString;
-            
             // get existing pool
             try
             {
                 _locker.AcquireReaderLock(-1);
-                if (_pools.TryGetValue(connectionString, out _pool))
+                if (_pools.TryGetValue(builder, out _pool))
                 {
                     _innerClient = _pool.GetConnection();
                     return;
@@ -121,10 +127,10 @@ namespace KpNet.KdbPlusClient
             {
                 _locker.AcquireWriterLock(-1);
 
-                if (!_pools.TryGetValue(connectionString, out _pool))
+                if (!_pools.TryGetValue(builder, out _pool))
                 {
                     _pool = new KdbPlusDatabaseClientPool(builder);
-                    _pools.Add(connectionString, _pool);
+                    _pools.Add(builder, _pool);
                 }
             }
             finally

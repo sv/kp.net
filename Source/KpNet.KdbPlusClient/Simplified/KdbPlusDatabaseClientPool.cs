@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using KpNet.KdbPlusClient.Simplified;
 
 namespace KpNet.KdbPlusClient
 {
     /// <summary>
     /// Implementation of connection pool.
     /// </summary>
-    internal sealed class KdbPlusDatabaseClientPool : IDisposable
+    public sealed class KdbPlusDatabaseClientPool : IKdbPlusDatabaseClientPool
     {
         private readonly KdbPlusConnectionStringBuilder _builder;
         private readonly object _locker = new object();
@@ -55,7 +56,14 @@ namespace KpNet.KdbPlusClient
             _maxPoolSize = maxPoolSize;
             _loadBalanceTimeout = loadBalanceTimeout;
 
+            AppDomain.CurrentDomain.DomainUnload += CurrentDomainUnload;
+
             InitializeConnectionPool();
+        }
+
+        void CurrentDomainUnload(object sender, EventArgs e)
+        {
+            Dispose();
         }
 
         /// <summary>
@@ -114,14 +122,11 @@ namespace KpNet.KdbPlusClient
         {
             ThrowIfDisposed();
 
+            Guard.ThrowIfNull(connection, "connection");
+
             lock (_locker)
             {
-                // dispose connection if _loadBalanceTimeout is set and is exceeded
-                if (ConnectionShouldBeDisposed(connection))
-                {
-                    DisposeConnection(connection);
-                }
-                else _connectionPool.Add(connection);
+                _connectionPool.Add(connection);
 
                 Monitor.Pulse(_locker);
             }
@@ -157,9 +162,10 @@ namespace KpNet.KdbPlusClient
             {
                 if (!_isDisposed && _createdConnections != null)
                 {
-                    Clear();
-
-                    _isDisposed = true;
+                    foreach (KdbPlusDatabaseClient connection in _createdConnections)
+                    {
+                        connection.Dispose();
+                    }
                 }
             }
         }
@@ -187,7 +193,7 @@ namespace KpNet.KdbPlusClient
             _connectionPool = new List<KdbPlusDatabaseClient>(_maxPoolSize);
             _createdConnections = new List<KdbPlusDatabaseClient>(_maxPoolSize);
 
-            for (int i = 0; i < _minPoolSize; i++)
+            for (int i = 0; i < _maxPoolSize; i++)
             {
                 CreateNewConnection();
             }

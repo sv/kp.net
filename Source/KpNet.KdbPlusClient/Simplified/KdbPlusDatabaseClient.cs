@@ -24,6 +24,7 @@ namespace KpNet.KdbPlusClient
         private readonly KdbPlusConnectionStringBuilder _builder;
         private bool _canBeReused = true;
         private bool _isDisposed;
+        private bool _isBusy;
 
         public string ConnectionString
         {
@@ -251,8 +252,14 @@ namespace KpNet.KdbPlusClient
         /// </value>
         public bool IsConnected
         {
-            get { return _canBeReused && _client.Connected; }
+            get { return _canBeReused && !_isDisposed && _client.Connected; }
             set { _canBeReused = value; }
+        }
+
+        public bool IsBusy
+        {
+            get { return _isBusy; }
+            set { _isBusy = value; }
         }
 
         /// <summary>

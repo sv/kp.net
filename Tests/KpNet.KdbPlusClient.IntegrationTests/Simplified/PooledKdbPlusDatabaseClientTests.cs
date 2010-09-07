@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
+using KpNet.KdbPlusClient.Simplified;
 using NUnit.Framework;
 
 namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
@@ -78,10 +79,10 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
         [Test]
         public void MultiThreadedTwoPoolsTest()
         {
-            const int threadCount = 5;
+            const int threadCount = 1;
             Thread[] threads = new Thread[threadCount];
 
-            foreach (KeyValuePair<string, KdbPlusDatabaseClientPool> entry in PooledKdbPlusDatabaseClient.Pools)
+            foreach (KeyValuePair<KdbPlusConnectionStringBuilder, IKdbPlusDatabaseClientPool> entry in PooledKdbPlusDatabaseClient.Pools)
             {
                 entry.Value.Dispose();
             }
@@ -127,7 +128,7 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
 
             Assert.AreEqual(2, PooledKdbPlusDatabaseClient.Pools.Keys.Count);
 
-            foreach (KeyValuePair<string, KdbPlusDatabaseClientPool> entry in PooledKdbPlusDatabaseClient.Pools)
+            foreach (KeyValuePair<KdbPlusConnectionStringBuilder, IKdbPlusDatabaseClientPool> entry in PooledKdbPlusDatabaseClient.Pools)
             {
                 Assert.AreEqual(threadCount, entry.Value.ConnectionsCount);
             }

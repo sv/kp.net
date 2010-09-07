@@ -7,7 +7,7 @@ namespace KpNet.KdbPlusClient
     /// <summary>
     /// Connection string builder for KDB+.
     /// </summary>
-    public sealed class KdbPlusConnectionStringBuilder : DbConnectionStringBuilder
+    public sealed class KdbPlusConnectionStringBuilder : DbConnectionStringBuilder, IEquatable<KdbPlusConnectionStringBuilder>
     {
         private const string ServerKey = "Server";
         private const string PortKey = "Port";
@@ -27,6 +27,18 @@ namespace KpNet.KdbPlusClient
         public const bool DefaultPooling = true;
 
 
+        private string _server;
+        private int _port;
+        private string _user;
+        private string _password;
+        private int _bufferSize;
+        private bool _pooling;
+        private int _minPoolSize;
+        private int _maxPoolSize;
+        private int _loadBalanceTimeout;
+        private int _hashCode;
+
+
         /// <summary>
         /// Initializes a new instance of the <see cref="KdbPlusConnectionStringBuilder"/> class.
         /// </summary>
@@ -42,6 +54,39 @@ namespace KpNet.KdbPlusClient
         /// </summary>
         public KdbPlusConnectionStringBuilder()
         {
+            Init();
+        }
+
+        public new string  ConnectionString
+        {
+            get
+            {
+                return base.ConnectionString;
+            }
+            set 
+            {
+                base.ConnectionString = value;
+                Init();
+            }
+        }
+
+        public override object this[string keyword]
+        {
+            get
+            {
+                return base[keyword];
+            }
+            set
+            {
+                base[keyword] = value;
+                Init();
+            }
+        }
+
+        public override void Clear()
+        {
+            base.Clear();
+            Init();
         }
 
         /// <summary>
@@ -50,8 +95,15 @@ namespace KpNet.KdbPlusClient
         /// <value>The server.</value>
         public string Server
         {
-            get { return GetStringValue(ServerKey); }
-            set { SetValue(ServerKey, value); }
+            get
+            {
+                return _server;
+            }
+            set 
+            {
+                SetValue(ServerKey, value);
+                _server = value;
+            }
         }
 
         /// <summary>
@@ -60,8 +112,15 @@ namespace KpNet.KdbPlusClient
         /// <value>The port.</value>
         public int Port
         {
-            get { return GetIntValue(PortKey); }
-            set { SetValue(PortKey, value.ToString()); }
+            get
+            {
+                return _port;
+            }
+            set
+            {
+                SetValue(PortKey, value.ToString());
+                _port = value;
+            }
         }
 
         /// <summary>
@@ -72,9 +131,13 @@ namespace KpNet.KdbPlusClient
         {
             get
             {
-                return GetValueOrDefault(BufferSizeKey, DefaultBufferSize);
+                return _bufferSize;
             }
-            set { SetValue(BufferSizeKey, value.ToString()); }
+            set
+            {
+                SetValue(BufferSizeKey, value.ToString());
+                _bufferSize = value;
+            }
         }
 
         /// <summary>
@@ -83,8 +146,15 @@ namespace KpNet.KdbPlusClient
         /// <value>The user ID.</value>
         public string UserID
         {
-            get { return GetValueOrDefault(UserKey, String.Empty); }
-            set { SetValue(UserKey, value); }
+            get
+            {
+                return _user;
+            }
+            set
+            {
+                SetValue(UserKey, value);
+                _user = value;
+            }
         }
 
         /// <summary>
@@ -93,8 +163,15 @@ namespace KpNet.KdbPlusClient
         /// <value>The password.</value>
         public string Password
         {
-            get { return GetValueOrDefault(PasswordKey,String.Empty); }
-            set { SetValue(PasswordKey, value); }
+            get
+            {
+                return _password;
+            }
+            set 
+            { 
+                SetValue(PasswordKey, value);
+                _password = value;
+            }
         }
 
         /// <summary>
@@ -105,11 +182,12 @@ namespace KpNet.KdbPlusClient
         {
             get
             {
-                return GetValueOrDefault(PoolingKey, DefaultPooling);
+                return _pooling;
             }
             set
             {
                 SetValue(PoolingKey, value.ToString());
+                _pooling = value;
             }
         }
 
@@ -121,11 +199,12 @@ namespace KpNet.KdbPlusClient
         {
             get
             {
-                return GetValueOrDefault(MinPoolSizeKey, DefaultMinPoolSize);
+                return _minPoolSize;
             }
             set
             {
                 SetValue(MinPoolSizeKey, value.ToString());
+                _minPoolSize = value;
             }
         }
 
@@ -137,11 +216,12 @@ namespace KpNet.KdbPlusClient
         {
             get
             {
-                return GetValueOrDefault(LoadBalanceTimeoutKey, DefaultLoadBalanceTimeoutSeconds);
+                return _loadBalanceTimeout;
             }
             set
             {
                 SetValue(LoadBalanceTimeoutKey, value.ToString());
+                _loadBalanceTimeout = value;
             }
         }
 
@@ -153,12 +233,27 @@ namespace KpNet.KdbPlusClient
         {
             get
             {
-                return GetValueOrDefault(MaxPoolSizeKey, DefaultMaxPoolSize);
+                return _maxPoolSize;
             }
             set
             {
                 SetValue(MaxPoolSizeKey, value.ToString());
+                _maxPoolSize = value;
             }
+        }
+
+        private void Init()
+        {
+            _server = GetValueOrDefault(ServerKey, String.Empty);
+            _port = GetValueOrDefault(PortKey,-1);
+            _bufferSize = GetValueOrDefault(BufferSizeKey, DefaultBufferSize);
+            _user = GetValueOrDefault(UserKey, String.Empty);
+            _password = GetValueOrDefault(PasswordKey, String.Empty);
+            _pooling = GetValueOrDefault(PoolingKey, DefaultPooling);
+            _minPoolSize = GetValueOrDefault(MinPoolSizeKey, DefaultMinPoolSize);
+            _loadBalanceTimeout = GetValueOrDefault(LoadBalanceTimeoutKey, DefaultLoadBalanceTimeoutSeconds);
+            _maxPoolSize = GetValueOrDefault(MaxPoolSizeKey, DefaultMaxPoolSize);
+            _hashCode = ConnectionString.ToLowerInvariant().GetHashCode();
         }
 
         private int GetValueOrDefault(string key, int defaultValue)
@@ -211,6 +306,28 @@ namespace KpNet.KdbPlusClient
         private void SetValue(string key, string value)
         {
             this[key] = value;
+        }
+
+
+        public bool Equals(KdbPlusConnectionStringBuilder other)
+        {
+            if (other == null)
+                return false;
+
+            if (ReferenceEquals(this, other))
+                return true;
+
+            return (String.Compare(ConnectionString, other.ConnectionString, StringComparison.OrdinalIgnoreCase) == 0);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as KdbPlusConnectionStringBuilder);
+        }
+
+        public override int GetHashCode()
+        {
+            return _hashCode;
         }
     }
 }
