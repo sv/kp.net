@@ -195,7 +195,7 @@ namespace KpNet.KdbPlusClient
             _connectionPool = new List<KdbPlusDatabaseClient>(_maxPoolSize);
             _createdConnections = new List<KdbPlusDatabaseClient>(_maxPoolSize);
 
-            for (int i = 0; i < _maxPoolSize; i++)
+            for (int i = 0; i < _minPoolSize; i++)
             {
                 CreateNewConnection();
             }
