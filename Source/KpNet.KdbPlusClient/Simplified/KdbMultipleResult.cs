@@ -4,7 +4,7 @@ using System.Data;
 
 namespace KpNet.KdbPlusClient
 {
-    internal sealed class KdbMultipleResult : IMultipleResult
+    public sealed class KdbMultipleResult : IMultipleResult
     {
         private readonly DataReaderCollection _readers;
         
