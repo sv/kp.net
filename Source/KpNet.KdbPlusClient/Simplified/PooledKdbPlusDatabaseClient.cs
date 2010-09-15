@@ -72,22 +72,6 @@ namespace KpNet.KdbPlusClient
         }
 
         /// <summary>
-        /// Clears the connection pool.
-        /// </summary>
-        public void ClearPool()
-        {
-            try
-            {
-                _locker.AcquireWriterLock(-1);
-                _pool.Clear();
-            }
-            finally
-            {
-                _locker.ReleaseWriterLock();
-            }
-        }
-
-        /// <summary>
         /// Gets the connection pool.
         /// </summary>
         /// <value>The pool.</value>

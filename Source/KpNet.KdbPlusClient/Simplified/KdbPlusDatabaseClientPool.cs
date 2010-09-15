@@ -38,5 +38,11 @@ namespace KpNet.KdbPlusClient
         /// Disposes the pool. After the pool is disposed, it can't be used anymore.
         /// </summary>
         public abstract void Dispose();
+
+        /// <summary>
+        /// Gets the connection information for current pool.
+        /// </summary>
+        /// <value>The connection information.</value>
+        public abstract KdbPlusConnectionStringBuilder ConnectionInformation { get; }
     }
 }

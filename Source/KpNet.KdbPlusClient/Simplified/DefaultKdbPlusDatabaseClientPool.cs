@@ -150,6 +150,15 @@ namespace KpNet.KdbPlusClient
         }
 
         /// <summary>
+        /// Gets the connection information for current pool.
+        /// </summary>
+        /// <value>The connection information.</value>
+        public override KdbPlusConnectionStringBuilder ConnectionInformation
+        {
+            get { return _builder; }
+        }
+
+        /// <summary>
         /// Clears this connection pool.
         /// </summary>
         public override void Clear()
