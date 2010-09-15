@@ -30,7 +30,7 @@ namespace Example
                 for (int i = 0; i < 10; i++)
                 {
                     //Connections are pooled since pooling is not disabled explicitly.
-                    using (IDatabaseClient client = new PooledKdbPlusDatabaseClient("server=localhost;port=1001;"))
+                    using (IDatabaseClient client = KdbPlusDatabaseClient.Factory.CreateNewClient("server=localhost;port=1001;"))
                     {
                         // get current time
                         TimeSpan time = client.ExecuteScalar<TimeSpan>(".z.T");
@@ -38,7 +38,7 @@ namespace Example
                     }
 
                     // Connections are recreated since pooling is disabled explicitly.
-                    using (IDatabaseClient client = new PooledKdbPlusDatabaseClient("server=localhost;port=1001;Pooling=false;"))
+                    using (IDatabaseClient client = KdbPlusDatabaseClient.Factory.CreateNewClient("server=localhost;port=1001;Pooling=false;"))
                     {
                         // get current time
                         TimeSpan time = client.ExecuteScalar<TimeSpan>(".z.T");
@@ -134,7 +134,7 @@ namespace Example
         {
             try
             {
-                using (IDatabaseClient client = new KdbPlusDatabaseClient("localhost", 1001))
+                using (IDatabaseClient client = KdbPlusDatabaseClient.Factory.CreateNonPooledClient("server=localhost;port=1001"))
                 {
                     // get current time
                     TimeSpan time = client.ExecuteScalar<TimeSpan>(".z.T");

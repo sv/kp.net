@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
-using KpNet.KdbPlusClient.Simplified;
 using NUnit.Framework;
 
 namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
@@ -17,24 +16,23 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
 
         protected override IDatabaseClient CreateDatabaseClientFromConString(string connectionString)
         {
-            return new PooledKdbPlusDatabaseClient(connectionString);
+            return KdbPlusDatabaseClient.Factory.CreateNewClient(connectionString);
         }
 
         [Test]
         public void SimplePoolingTest()
         {
             PooledKdbPlusDatabaseClient client = (PooledKdbPlusDatabaseClient)CreateDatabaseClient();
-            Assert.IsTrue(client.Pooled);
             Assert.IsNotNull(client.Pool);
+            client.Dispose();
         }
 
         [Test]
         public void DisabledPoolingTest()
         {
             KdbPlusConnectionStringBuilder builder = new KdbPlusConnectionStringBuilder { Server = Constants.Host, Port = Constants.Port, Pooling = false};
-            PooledKdbPlusDatabaseClient client = (PooledKdbPlusDatabaseClient)CreateDatabaseClientFromConString(builder.ConnectionString);
-            Assert.IsFalse(client.Pooled);
-            Assert.IsNull(client.Pool);
+            NonPooledKdbPlusDatabaseClient client = (NonPooledKdbPlusDatabaseClient)CreateDatabaseClientFromConString(builder.ConnectionString);
+            client.Dispose();
         }
 
         [Test]
@@ -71,7 +69,6 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
             }
 
             PooledKdbPlusDatabaseClient testClient = (PooledKdbPlusDatabaseClient)CreateDatabaseClient();
-            Assert.IsTrue(testClient.Pooled);
             Assert.IsNotNull(testClient.Pool);
             Assert.AreEqual(threadCount, testClient.Pool.ConnectionsCount);
         }
@@ -82,7 +79,7 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
             const int threadCount = 1;
             Thread[] threads = new Thread[threadCount];
 
-            foreach (KeyValuePair<KdbPlusConnectionStringBuilder, IKdbPlusDatabaseClientPool> entry in PooledKdbPlusDatabaseClient.Pools)
+            foreach (KeyValuePair<KdbPlusConnectionStringBuilder, KdbPlusDatabaseClientPool> entry in PooledKdbPlusDatabaseClient.Pools)
             {
                 entry.Value.Dispose();
             }
@@ -128,7 +125,7 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
 
             Assert.AreEqual(2, PooledKdbPlusDatabaseClient.Pools.Keys.Count);
 
-            foreach (KeyValuePair<KdbPlusConnectionStringBuilder, IKdbPlusDatabaseClientPool> entry in PooledKdbPlusDatabaseClient.Pools)
+            foreach (KeyValuePair<KdbPlusConnectionStringBuilder, KdbPlusDatabaseClientPool> entry in PooledKdbPlusDatabaseClient.Pools)
             {
                 Assert.AreEqual(threadCount, entry.Value.ConnectionsCount);
             }

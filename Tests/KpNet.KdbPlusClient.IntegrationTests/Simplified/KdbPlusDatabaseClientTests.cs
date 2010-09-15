@@ -319,7 +319,7 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
 
         protected virtual IDatabaseClient CreateDatabaseClientFromConString(string connectionString)
         {
-            return new KdbPlusDatabaseClient(connectionString);
+            return new NonPooledKdbPlusDatabaseClient(connectionString);
         }
 
         protected IDatabaseClient CreateFakeDatabaseClient()
@@ -329,7 +329,7 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
 
         protected virtual IDatabaseClient CreateDatabaseClient(string host, int port)
         {
-            return new KdbPlusDatabaseClient(host, port);
+            return new NonPooledKdbPlusDatabaseClient(host, port);
         }
     }
 }
