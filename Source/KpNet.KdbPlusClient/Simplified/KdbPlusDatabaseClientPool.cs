@@ -30,9 +30,9 @@ namespace KpNet.KdbPlusClient
         public abstract void ReturnConnectionToPool(KdbPlusDatabaseClient connection);
 
         /// <summary>
-        /// Clears this connection pool. Each connection in the pool will be recreated.
+        /// Refreshes this connection pool. Each connection in the pool will be recreated.
         /// </summary>
-        public abstract void Clear();
+        public abstract void Refresh();
 
         /// <summary>
         /// Disposes the pool. After the pool is disposed, it can't be used anymore.

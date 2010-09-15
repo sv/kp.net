@@ -131,5 +131,16 @@ namespace KpNet.KdbPlusClient
         /// </summary>
         /// <value>The connection string.</value>
         string ConnectionString { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is pooled.
+        /// </summary>
+        /// <value><c>true</c> if this instance is pooled; otherwise, <c>false</c>.</value>
+        bool IsPooled { get; }
+
+        /// <summary>
+        /// Refreshes the connection pool if the instance is pooled.
+        /// </summary>
+        void RefreshPool();
     }
 }

@@ -141,6 +141,23 @@ namespace KpNet.KdbPlusClient
         public abstract string ConnectionString { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is pooled.
+        /// </summary>
+        /// <value><c>true</c> if this instance is pooled; otherwise, <c>false</c>.</value>
+        public virtual bool IsPooled
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// Refreshes the connection pool if the instance is pooled.
+        /// </summary>
+        public virtual void RefreshPool()
+        {
+            throw new InvalidOperationException("This operation is invalid for this type of client.");
+        }
+
+        /// <summary>
         /// Gets the factory for creating clients.
         /// </summary>
         /// <value>The factory.</value>

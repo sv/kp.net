@@ -71,6 +71,27 @@ namespace KpNet.KdbPlusClient
             _innerClient = _pool.GetConnection();
         }
 
+
+        /// <summary>
+        /// Refreshes the connection pool if the instance is pooled.
+        /// </summary>
+        public override void RefreshPool()
+        {
+            _pool.Refresh();
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is pooled.
+        /// </summary>
+        /// <value><c>true</c> if this instance is pooled; otherwise, <c>false</c>.</value>
+        public override bool IsPooled
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         /// <summary>
         /// Gets the connection pool.
         /// </summary>

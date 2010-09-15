@@ -161,7 +161,7 @@ namespace KpNet.KdbPlusClient
         /// <summary>
         /// Clears this connection pool.
         /// </summary>
-        public override void Clear()
+        public override void Refresh()
         {
             ThrowIfDisposed();
 
