@@ -113,7 +113,7 @@ namespace KpNet.KdbPlusClient
             try
             {
                 _state = ConnectionState.Connecting;
-                _client = new PooledKdbPlusDatabaseClient(_builder);
+                _client = KdbPlusDatabaseClient.Factory.CreateNewClient(_builder);
                 _state = ConnectionState.Open;
             }
             catch (KdbPlusException)

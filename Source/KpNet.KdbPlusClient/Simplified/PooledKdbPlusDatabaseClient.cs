@@ -3,21 +3,20 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
-using KpNet.KdbPlusClient.Simplified;
 
 namespace KpNet.KdbPlusClient
 {
     /// <summary>
     /// KdbPlus client implementation that supportes pooling.
     /// </summary>
-    public sealed class PooledKdbPlusDatabaseClient : IDatabaseClient
+    internal sealed class PooledKdbPlusDatabaseClient : KdbPlusDatabaseClient
     {
-        private static readonly Dictionary<KdbPlusConnectionStringBuilder, IKdbPlusDatabaseClientPool> _pools =
-            new Dictionary<KdbPlusConnectionStringBuilder, IKdbPlusDatabaseClientPool>();
+        private static readonly Dictionary<KdbPlusConnectionStringBuilder, KdbPlusDatabaseClientPool> _pools =
+            new Dictionary<KdbPlusConnectionStringBuilder, KdbPlusDatabaseClientPool>();
 
         private static readonly ReaderWriterLock _locker = new ReaderWriterLock();
 
-        private IKdbPlusDatabaseClientPool _pool;
+        private KdbPlusDatabaseClientPool _pool;
         private KdbPlusDatabaseClient _innerClient;
 
         /// <summary>
@@ -36,7 +35,7 @@ namespace KpNet.KdbPlusClient
         /// Gets the connection pools.
         /// </summary>
         /// <value>The pools.</value>
-        internal static IDictionary<KdbPlusConnectionStringBuilder, IKdbPlusDatabaseClientPool> Pools
+        internal static IDictionary<KdbPlusConnectionStringBuilder, KdbPlusDatabaseClientPool> Pools
         {
             get
             {
@@ -62,15 +61,10 @@ namespace KpNet.KdbPlusClient
         {
             Guard.ThrowIfNull(builder, "builder");
 
-            if (builder.Pooling)
-            {
-                GetClientFromPool(builder);
-            }
-
-            else _innerClient = new KdbPlusDatabaseClient(builder);
+            GetClientFromPool(builder);
         }
 
-        public PooledKdbPlusDatabaseClient(IKdbPlusDatabaseClientPool pool)
+        public PooledKdbPlusDatabaseClient(KdbPlusDatabaseClientPool pool)
         {
             Guard.ThrowIfNull(pool, "pool");
             _pool = pool;
@@ -97,7 +91,7 @@ namespace KpNet.KdbPlusClient
         /// Gets the connection pool.
         /// </summary>
         /// <value>The pool.</value>
-        internal IKdbPlusDatabaseClientPool Pool
+        internal KdbPlusDatabaseClientPool Pool
         {
             get
             {
@@ -129,7 +123,7 @@ namespace KpNet.KdbPlusClient
 
                 if (!_pools.TryGetValue(builder, out _pool))
                 {
-                    _pool = new KdbPlusDatabaseClientPool(builder);
+                    _pool = Factory.CreatePool(builder);
                     _pools.Add(builder, _pool);
                 }
             }
@@ -144,31 +138,16 @@ namespace KpNet.KdbPlusClient
 
         #region IDatabaseClient Members
 
-        public void Dispose()
+        public override void Dispose()
         {
-            if (_pool != null)
-                _pool.ReturnConnectionToPool(_innerClient);
-
-            else _innerClient.Dispose();
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this <see cref="PooledKdbPlusDatabaseClient"/> is pooled.
-        /// </summary>
-        /// <value><c>true</c> if pooled; otherwise, <c>false</c>.</value>
-        public bool Pooled
-        {
-            get
-            {
-                return _pool != null;
-            }
+            _pool.ReturnConnectionToPool(_innerClient);
         }
 
         /// <summary>
         /// Gets or sets the send timeout.
         /// </summary>
         /// <value>The send timeout.</value>
-        public TimeSpan SendTimeout
+        public override TimeSpan SendTimeout
         {
             get { return _innerClient.SendTimeout; }
             set { _innerClient.SendTimeout = value; }
@@ -178,7 +157,7 @@ namespace KpNet.KdbPlusClient
         /// Gets or sets the receive timeout.
         /// </summary>
         /// <value>The receive timeout.</value>
-        public TimeSpan ReceiveTimeout
+        public override TimeSpan ReceiveTimeout
         {
             get { return _innerClient.ReceiveTimeout; }
             set { _innerClient.ReceiveTimeout = value; }
@@ -188,7 +167,7 @@ namespace KpNet.KdbPlusClient
         /// Gets the date and time when client was created.
         /// </summary>
         /// <value>The creation date.</value>
-        public DateTime Created
+        public override DateTime Created
         {
             get { return _innerClient.Created; }
         }
@@ -199,12 +178,13 @@ namespace KpNet.KdbPlusClient
         /// <value>
         /// 	<c>true</c> if this instance is connected; otherwise, <c>false</c>.
         /// </value>
-        public bool IsConnected
+        public override bool IsConnected
         {
             get
             {
                 return _innerClient.IsConnected;
             }
+            internal set { _innerClient.IsConnected = value; }
         }
 
 
@@ -214,7 +194,7 @@ namespace KpNet.KdbPlusClient
         /// <param name="query">The query.</param>
         /// <param name="parameters">The query parameters</param>
         /// <returns>DbDataReader object</returns>
-        public DbDataReader ExecuteQuery(string query, params object[] parameters)
+        public override DbDataReader ExecuteQuery(string query, params object[] parameters)
         {
             return _innerClient.ExecuteQuery(query, parameters);
         }
@@ -225,7 +205,7 @@ namespace KpNet.KdbPlusClient
         /// <param name="query">The query.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns>DataTable object</returns>
-        public DataTable ExecuteQueryAsDataTable(string query, params object[] parameters)
+        public override DataTable ExecuteQueryAsDataTable(string query, params object[] parameters)
         {
             return _innerClient.ExecuteQueryAsDataTable(query, parameters);
         }
@@ -236,7 +216,7 @@ namespace KpNet.KdbPlusClient
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="parameters">The query parameters</param>
-        public void ExecuteNonQuery(string query, params object[] parameters)
+        public override void ExecuteNonQuery(string query, params object[] parameters)
         {
             _innerClient.ExecuteNonQuery(query, parameters);
         }
@@ -249,7 +229,7 @@ namespace KpNet.KdbPlusClient
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="parameters">The query parameters</param>
-        public void ExecuteOneWayNonQuery(string query, params object[] parameters)
+        public override void ExecuteOneWayNonQuery(string query, params object[] parameters)
         {
             _innerClient.ExecuteOneWayNonQuery(query, parameters);
         }
@@ -262,7 +242,7 @@ namespace KpNet.KdbPlusClient
         /// <param name="query">The query.</param>
         /// <param name="parameters">The query parameters</param>
         /// <returns></returns>
-        public T ExecuteScalar<T>(string query, params object[] parameters) where T : struct
+        public override T ExecuteScalar<T>(string query, params object[] parameters)
         {
             return _innerClient.ExecuteScalar<T>(query, parameters);
         }
@@ -274,7 +254,7 @@ namespace KpNet.KdbPlusClient
         /// <param name="query">The query.</param>
         /// <param name="parameters">The query parameters</param>
         /// <returns></returns>
-        public object ExecuteScalar(string query, params object[] parameters)
+        public override object ExecuteScalar(string query, params object[] parameters)
         {
             return _innerClient.ExecuteScalar(query, parameters);
         }
@@ -286,7 +266,7 @@ namespace KpNet.KdbPlusClient
         /// <param name="query">The query.</param>
         /// <param name="parameters">The query parameters</param>
         /// <returns></returns>
-        public IMultipleResult ExecuteQueryWithMultipleResult(string query, params object[] parameters)
+        public override IMultipleResult ExecuteQueryWithMultipleResult(string query, params object[] parameters)
         {
             return _innerClient.ExecuteQueryWithMultipleResult(query, parameters);
         }
@@ -295,7 +275,7 @@ namespace KpNet.KdbPlusClient
         /// Receives result from server.
         /// </summary>
         /// <returns></returns>
-        public object Receive()
+        public override object Receive()
         {
             return _innerClient.Receive();
         }
@@ -305,7 +285,7 @@ namespace KpNet.KdbPlusClient
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public T Receive<T>()
+        public override T Receive<T>()
         {
             return _innerClient.Receive<T>();
         }
@@ -314,7 +294,7 @@ namespace KpNet.KdbPlusClient
         /// Receives the query result from server.
         /// </summary>
         /// <returns></returns>
-        public DbDataReader ReceiveQueryResult()
+        public override DbDataReader ReceiveQueryResult()
         {
             return _innerClient.ReceiveQueryResult();
         }
@@ -323,7 +303,7 @@ namespace KpNet.KdbPlusClient
         /// Receives the query result from server.
         /// </summary>
         /// <returns></returns>
-        public DataTable ReceiveQueryResultAsDataTable()
+        public override DataTable ReceiveQueryResultAsDataTable()
         {
             return _innerClient.ReceiveQueryResultAsDataTable();
         }
@@ -332,7 +312,7 @@ namespace KpNet.KdbPlusClient
         /// Receives the query result from server.
         /// </summary>
         /// <returns></returns>
-        public IMultipleResult ReceiveMultipleQueryResult()
+        public override IMultipleResult ReceiveMultipleQueryResult()
         {
             return _innerClient.ReceiveMultipleQueryResult();
         }
@@ -341,7 +321,7 @@ namespace KpNet.KdbPlusClient
         /// Gets the connection string.
         /// </summary>
         /// <value>The connection string.</value>
-        public string ConnectionString
+        public override string ConnectionString
         {
             get { return _innerClient.ConnectionString; }
         }
