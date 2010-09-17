@@ -126,6 +126,7 @@
     <Compile Include="KdbPlusParameterCollection.cs" />
     <Compile Include="Simplified\BalancingKdbPlusDatabaseClient.cs" />
     <Compile Include="Simplified\ConnectionDispatcher.cs" />
+    <Compile Include="Simplified\DelegatingKdbPlusDatabaseClient.cs" />
     <Compile Include="Simplified\KdbPlusDatabaseClientFactory.cs" />
     <Compile Include="Simplified\KdbPlusDatabaseClientPool.cs" />
     <Compile Include="Simplified\KdbPlusDatabaseClient.cs" />

@@ -9,6 +9,8 @@ namespace KpNet.KdbPlusClient
     /// </summary>
     public abstract class KdbPlusDatabaseClient : IDatabaseClient
     {
+        private bool _isDisposed;
+
         protected KdbPlusDatabaseClient()
         {
         }
@@ -164,6 +166,27 @@ namespace KpNet.KdbPlusClient
         public static KdbPlusDatabaseClientFactory Factory
         {
             get { return _factory; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is disposed.
+        /// </summary>
+        /// <value>
+        /// 	<c>true</c> if this instance is disposed; otherwise, <c>false</c>.
+        /// </value>
+        protected bool IsDisposed
+        {
+            get { return _isDisposed; }
+            set { _isDisposed = value; }
+        }
+
+        /// <summary>
+        /// Throws exception if the instance is disposed.
+        /// </summary>
+        protected void ThrowIfDisposed()
+        {
+            if (_isDisposed)
+                throw new ObjectDisposedException("Already disposed.");
         }
     }
 }

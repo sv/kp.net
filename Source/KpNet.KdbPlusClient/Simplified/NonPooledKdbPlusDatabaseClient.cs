@@ -22,7 +22,6 @@ namespace KpNet.KdbPlusClient
         private DateTime _created;
         private readonly KdbPlusConnectionStringBuilder _builder;
         private bool _canBeReused = true;
-        private bool _isDisposed;
 
         public override string ConnectionString
         {
@@ -250,7 +249,7 @@ namespace KpNet.KdbPlusClient
         /// </value>
         public override bool IsConnected
         {
-            get { return _canBeReused && !_isDisposed && _client.Connected; }
+            get { return _canBeReused && !IsDisposed && _client.Connected; }
             internal set { _canBeReused = value; }
         }
 
@@ -301,10 +300,11 @@ namespace KpNet.KdbPlusClient
         /// </summary>
         public override void Dispose()
         {
-            if (!_isDisposed && _client != null)
+            if (!IsDisposed)
             {
-                _client.Close();
-                _isDisposed = true;
+                if(_client != null)
+                    _client.Close();
+                IsDisposed = true;
             }
         }
 
@@ -446,8 +446,7 @@ namespace KpNet.KdbPlusClient
             if(!_canBeReused)
                 throw new InvalidOperationException("Connection can't be reused.");
 
-            if(_isDisposed)
-                throw new ObjectDisposedException("Already disposed.");
+            ThrowIfDisposed();
         }
 
         private object HandleFatalException(Exception ex)
