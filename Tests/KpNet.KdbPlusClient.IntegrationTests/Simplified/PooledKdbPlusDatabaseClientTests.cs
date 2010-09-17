@@ -136,28 +136,30 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
         {
             KdbPlusConnectionStringBuilder builder1 = new KdbPlusConnectionStringBuilder { Server = Constants.Host, Port = Constants.Port, LoadBalanceTimeout = 3};
 
-            PooledKdbPlusDatabaseClient client1;
-            using (client1 = (PooledKdbPlusDatabaseClient)CreateDatabaseClientFromConString(builder1.ConnectionString)
+            KdbPlusDatabaseClient innerClient1;
+            using (PooledKdbPlusDatabaseClient client1 = (PooledKdbPlusDatabaseClient)CreateDatabaseClientFromConString(builder1.ConnectionString)
                                 )
             {
                 client1.ExecuteNonQuery("0");
+                innerClient1 = client1.InnerClient;
                 Thread.Sleep(5000);
             }
 
 
             // with delay there should be new connection
-            PooledKdbPlusDatabaseClient client2;
-            using (client2 = (PooledKdbPlusDatabaseClient)CreateDatabaseClientFromConString(builder1.ConnectionString)
+            KdbPlusDatabaseClient innerClient2;
+            using (PooledKdbPlusDatabaseClient client2 = (PooledKdbPlusDatabaseClient)CreateDatabaseClientFromConString(builder1.ConnectionString)
                                 )
             {
-                Assert.AreNotSame(client1.InnerClient, client2.InnerClient);
-                
+                innerClient2 = client2.InnerClient;
+                Assert.AreNotSame(innerClient1, innerClient2);
             }
+
             using (PooledKdbPlusDatabaseClient client3 = (PooledKdbPlusDatabaseClient)CreateDatabaseClientFromConString(builder1.ConnectionString)
                                 )
             {
                 // without delay connection should be the same
-                Assert.AreSame(client2.InnerClient, client3.InnerClient);
+                Assert.AreSame(innerClient2, client3.InnerClient);
             }
 
         }
