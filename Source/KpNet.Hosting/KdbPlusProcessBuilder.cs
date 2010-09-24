@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using KpNet.KdbPlusClient;
 using TR.Common;
 
 namespace KpNet.Hosting
@@ -17,7 +18,7 @@ namespace KpNet.Hosting
         private ILogger _logger;
         private string _processName;
         private string _processTitle;
-        private readonly List<Action<KdbPlusDatabaseConnection>> _commands;
+        private readonly List<Action<IDatabaseClient>> _commands;
         private string _kdbLog;
         private int? _threadCount;
         private bool _processCreated;
@@ -40,7 +41,7 @@ namespace KpNet.Hosting
 
             _processTitle = string.Empty;
 
-            _commands = new List<Action<KdbPlusDatabaseConnection>>();            
+            _commands = new List<Action<IDatabaseClient>>();            
 
             _kdbLog = string.Empty;
 
@@ -122,7 +123,7 @@ namespace KpNet.Hosting
             return this;
         }
 
-        public KdbPlusProcessBuilder AddCommand(Action<KdbPlusDatabaseConnection> command)
+        public KdbPlusProcessBuilder AddCommand(Action<IDatabaseClient> command)
         {
             ThrowExceptionfIfProcessCreated();
 
@@ -133,7 +134,7 @@ namespace KpNet.Hosting
             return this;
         }
 
-        public KdbPlusProcessBuilder AddCommands(IEnumerable<Action<KdbPlusDatabaseConnection>> commands)
+        public KdbPlusProcessBuilder AddCommands(IEnumerable<Action<IDatabaseClient>> commands)
         {
             ThrowExceptionfIfProcessCreated();
 

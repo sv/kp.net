@@ -1,4 +1,6 @@
-﻿namespace KpNet.Hosting
+﻿using KpNet.KdbPlusClient;
+
+namespace KpNet.Hosting
 {
     public abstract class KdbPlusProcess
     {
@@ -12,7 +14,7 @@
         public abstract bool IsAlive
         { get; }
 
-        public abstract KdbPlusDatabaseConnection GetConnection();
+        public abstract IDatabaseClient GetConnection();
 
         public static KdbPlusProcessBuilder Builder
         {

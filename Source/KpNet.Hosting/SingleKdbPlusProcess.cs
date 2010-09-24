@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using KpNet.KdbPlusClient;
 using TR.Common;
 
 namespace KpNet.Hosting
 {
     internal sealed class SingleKdbPlusProcess : KdbPlusProcess
     {
+        private const string TestConnectionCommand = @"0"; //ping q process - it should return 0 back
+        private const string ErrorInQuery = "ERROR";
+
         private readonly string _processName;
         private readonly string _host;
         private readonly int _port;
@@ -14,7 +19,7 @@ namespace KpNet.Hosting
         private readonly ISettingsStorage _storage;
         private readonly string _commandLine;
         private readonly string _processTitle;
-        private readonly List<Action<KdbPlusDatabaseConnection>> _commands;
+        private readonly List<Action<IDatabaseClient>> _commands;
 
         private readonly object _locker = new object();
         private int _id;
@@ -23,8 +28,8 @@ namespace KpNet.Hosting
         public SingleKdbPlusProcess(string processName, string host, 
                                     int port, string commandLine, string processTitle,
                                     string workingDirectory, ILogger logger, 
-                                    ISettingsStorage storage, 
-                                    List<Action<KdbPlusDatabaseConnection>> commands)
+                                    ISettingsStorage storage,
+                                    List<Action<IDatabaseClient>> commands)
         {
             Guard.ThrowIfNull(logger, "logger");
             Guard.ThrowIfNull(storage, "storage");
@@ -52,7 +57,7 @@ namespace KpNet.Hosting
                 _processTitle = _processKey;
             }
 
-            _commands = new List<Action<KdbPlusDatabaseConnection>>();
+            _commands = commands;
         }
 
         public override void Start()
@@ -88,23 +93,26 @@ namespace KpNet.Hosting
         {
             get
             {
-                try
-                {
-                    CheckIfProcessIsRepsponding();
-
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
+                return IsProcessResponding();
             }
         }
 
-        public override KdbPlusDatabaseConnection GetConnection()
+        public override IDatabaseClient GetConnection()
         {
-            return new KdbPlusDatabaseConnection(_host, _port);
-        }
+            KdbPlusConnectionStringBuilder builder = new KdbPlusConnectionStringBuilder();
+
+            builder.Port = _port;
+
+            builder.Server = _host;
+
+            KdbPlusDatabaseClient client = KdbPlusDatabaseClient.Factory.CreateNewClient(builder);
+
+            client.SendTimeout = TimeSpan.FromMinutes(15);
+
+            client.ReceiveTimeout = TimeSpan.FromMinutes(15);
+
+            return client;
+        }        
 
         private int StartProcess()
         {
@@ -137,11 +145,11 @@ namespace KpNet.Hosting
         {
             if(_commands.Count > 0)
             {
-                using(KdbPlusDatabaseConnection connection = GetConnection())
+                using (IDatabaseClient client = GetConnection())
                 {
-                    foreach(Action<KdbPlusDatabaseConnection> command in _commands)
+                    foreach (Action<IDatabaseClient> command in _commands)
                     {
-                        command(connection);
+                        command(client);
                     }
                 }
             }
@@ -154,9 +162,37 @@ namespace KpNet.Hosting
 
         private void CheckIfProcessIsRepsponding()
         {
-            if (!KdbPlusDatabaseConnection.Check(_host, _port))
+            if (!IsProcessResponding())
             {
                 throw new ProcessException(string.Format("{0}:{1} is not responding.", _host, _port));
+            }
+        }
+
+        private bool IsProcessResponding()
+        {
+            try
+            {
+                using (IDatabaseClient client = GetConnection())
+                {                    
+                    CheckResult(client.ExecuteScalar(TestConnectionCommand));
+
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static void CheckResult(object result)
+        {
+            if (result != null)
+            {
+                string errorMessage = result as string;
+
+                if (errorMessage != null && errorMessage.StartsWith(ErrorInQuery, StringComparison.OrdinalIgnoreCase))
+                    throw new KdbPlusException(String.Format(CultureInfo.InvariantCulture, "Error occured during K+ query: '{0}'.", errorMessage.Replace(ErrorInQuery, String.Empty)));
             }
         }
 

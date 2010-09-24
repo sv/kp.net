@@ -48,7 +48,6 @@
     <Compile Include="FormatterHelper.cs" />
     <Compile Include="ISettingsStorage.cs" />
     <Compile Include="KdbPlusCommandLineBuilder.cs" />
-    <Compile Include="KdbPlusDatabaseConnection.cs" />
     <Compile Include="KdbPlusProcess.cs" />
     <Compile Include="KdbPlusProcessBuilder.cs" />
     <Compile Include="NullSettingsStorage.cs" />
