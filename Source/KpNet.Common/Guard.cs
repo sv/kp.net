@@ -1,13 +1,13 @@
 using System;
 
-namespace KpNet.KdbPlusClient
+namespace KpNet.Common
 {
     /// <summary>
     /// This class provides checking input parameter values for null or empty values. 
     /// </summary>
-    internal static class Guard
+    public static class Guard
     {
-        private const string ValueIsNullOrEmpty = "Provided argument value is null or empty.";
+        private const string ValueIsNull = "Supplied parameter value is null or empty";
 
         /// <summary>
         /// Throws ArgumentNullException if value is null
@@ -15,7 +15,7 @@ namespace KpNet.KdbPlusClient
         /// <param name="value"></param>
         public static void ThrowIfNull(object value)
         {
-            if (value == null) throw new ArgumentNullException(string.Empty, ValueIsNullOrEmpty);
+            if (value == null) throw new ArgumentNullException(string.Empty,ValueIsNull);
         }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace KpNet.KdbPlusClient
         /// <param name="parameterName"></param>
         public static void ThrowIfNull(object value, string parameterName)
         {
-            if (value == null) throw new ArgumentNullException(parameterName, ValueIsNullOrEmpty);
+            if (value == null) throw new ArgumentNullException(parameterName, ValueIsNull);
         } 
         
         /// <summary>
@@ -45,7 +45,7 @@ namespace KpNet.KdbPlusClient
         /// <param name="value"></param>
         public static void ThrowIfNullOrEmpty(string value)
         {
-            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(string.Empty, ValueIsNullOrEmpty);
+            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(string.Empty, ValueIsNull);
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace KpNet.KdbPlusClient
         /// <param name="parameterName"></param>
         public static void ThrowIfNullOrEmpty(string value, string parameterName)
         {
-            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(parameterName, ValueIsNullOrEmpty);
+            if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(parameterName, ValueIsNull);
         }
         
         /// <summary>

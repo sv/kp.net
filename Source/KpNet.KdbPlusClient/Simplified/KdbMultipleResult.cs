@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Kdbplus;
 using System.Data;
+using KpNet.Common;
 
 namespace KpNet.KdbPlusClient
 {

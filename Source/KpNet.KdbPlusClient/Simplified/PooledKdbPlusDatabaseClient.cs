@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
+using KpNet.Common;
 
 namespace KpNet.KdbPlusClient
 {

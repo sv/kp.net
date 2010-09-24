@@ -1,4 +1,6 @@
 ﻿
+using KpNet.Common;
+
 namespace KpNet.KdbPlusClient
 {
     internal sealed class DefaultKdbPlusDatabaseClientFactory : KdbPlusDatabaseClientFactory

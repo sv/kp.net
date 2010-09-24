@@ -133,7 +133,6 @@
     <Compile Include="Simplified\DefaultKdbPlusDatabaseClientFactory.cs" />
     <Compile Include="Simplified\DefaultKdbPlusDatabaseClientPool.cs" />
     <Compile Include="Simplified\DataReaderCollection.cs" />
-    <Compile Include="Guard.cs" />
     <Compile Include="Simplified\IDatabaseClient.cs" />
     <Compile Include="Simplified\IMultipleResult.cs" />
     <Compile Include="Simplified\NonPooledKdbPlusDatabaseClient.cs" />
@@ -166,6 +165,10 @@
     <ProjectReference Include="..\kdbplib\kdbplib.csproj">
       <Project>{380FCA74-8F2F-479F-B63D-2546503DA934}</Project>
       <Name>kdbplib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\KpNet.Common\KpNet.Common.csproj">
+      <Project>{84DECA5F-3F2B-46EC-99D8-06629FF32C6E}</Project>
+      <Name>KpNet.Common</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -2,6 +2,7 @@
 using System.Data;
 using System.Data.Common;
 using System.Text;
+using KpNet.Common;
 
 namespace KpNet.KdbPlusClient
 {

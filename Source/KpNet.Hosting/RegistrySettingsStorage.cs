@@ -1,5 +1,5 @@
-﻿using Microsoft.Win32;
-using TR.Common;
+﻿using KpNet.Common;
+using Microsoft.Win32;
 
 namespace KpNet.Hosting
 {

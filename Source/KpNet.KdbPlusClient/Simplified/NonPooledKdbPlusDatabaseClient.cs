@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 using Kdbplus;
+using KpNet.Common;
 
 namespace KpNet.KdbPlusClient
 {
