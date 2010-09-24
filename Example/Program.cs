@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using KpNet.Hosting;
 using KpNet.KdbPlusClient;
 
 
@@ -12,15 +13,25 @@ namespace Example
         {
             //1. download trial kdb+ here http://kx.com/Developers/software.php
             //2. start q process on 1001 port by running  'q -p 1001'
-                
-            // Simplified API
-            RunSimplifiedAPIExample();
+            KdbPlusProcess process = KdbPlusProcess.Builder.StartSingle();
+
+            try
+            {
+                // Simplified API
+                RunSimplifiedAPIExample();
+
+                // Implicit connection pooling
+                RunSimplifiedConnectionPoolingExample();
+
+                // ADO.Net provider
+                RunADONetExample();
+            }
+            finally
+            {
+                if(process.IsAlive)
+                    process.Kill();
+            }    
             
-            // Implicit connection pooling
-            RunSimplifiedConnectionPoolingExample();
-            
-            // ADO.Net provider
-            RunADONetExample();
         }
 
         private static void RunSimplifiedConnectionPoolingExample()

@@ -70,6 +70,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Source\KpNet.Hosting\KpNet.Hosting.csproj">
+      <Project>{A9A5CE6E-6DFE-4BBF-AF50-318C9A74746D}</Project>
+      <Name>KpNet.Hosting</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Source\KpNet.KdbPlusClient\KpNet.KdbPlusClient.csproj">
       <Project>{66C3F020-63A3-4B45-B58A-3171D5482CBB}</Project>
       <Name>KpNet.KdbPlusClient</Name>

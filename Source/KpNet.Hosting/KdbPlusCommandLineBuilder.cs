@@ -25,8 +25,6 @@ namespace KpNet.Hosting
 
         public KdbPlusCommandLineBuilder SetLog(string log)
         {
-            Guard.ThrowIfNullOrEmpty(log, "log");
-
             _log = log;
 
             return this;
