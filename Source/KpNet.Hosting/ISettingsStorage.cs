@@ -1,7 +1,7 @@
 ﻿
 namespace KpNet.Hosting
 {
-    public interface ISettingStorage
+    public interface ISettingsStorage
     {
         void SetProcessId(string key, int processId);
 

@@ -13,7 +13,7 @@ namespace Example
         {
             //1. download trial kdb+ here http://kx.com/Developers/software.php
             //2. start q process on 1001 port by running  'q -p 1001'
-            KdbPlusProcess process = KdbPlusProcess.Builder.StartSingle();
+            KdbPlusProcess process = KdbPlusProcess.Builder.StartNew();
 
             try
             {

@@ -11,7 +11,7 @@ namespace KpNet.Hosting
         private readonly int _port;
         private readonly string _workingDirectory;
         private readonly ILogger _logger;
-        private readonly ISettingStorage _storage;
+        private readonly ISettingsStorage _storage;
         private readonly string _commandLine;
         private readonly string _processTitle;
         private readonly List<Action<KdbPlusDatabaseConnection>> _commands;
@@ -23,7 +23,7 @@ namespace KpNet.Hosting
         public SingleKdbPlusProcess(string processName, string host, 
                                     int port, string commandLine, string processTitle,
                                     string workingDirectory, ILogger logger, 
-                                    ISettingStorage storage, 
+                                    ISettingsStorage storage, 
                                     List<Action<KdbPlusDatabaseConnection>> commands)
         {
             Guard.ThrowIfNull(logger, "logger");

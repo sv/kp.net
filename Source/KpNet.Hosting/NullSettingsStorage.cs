@@ -1,10 +1,10 @@
 ﻿namespace KpNet.Hosting
 {
-    public sealed class NullSettingStorage : ISettingStorage
+    public sealed class NullSettingsStorage : ISettingsStorage
     {
-        private static readonly NullSettingStorage _instance = new NullSettingStorage();
+        private static readonly NullSettingsStorage _instance = new NullSettingsStorage();
 
-        public static NullSettingStorage Instance
+        public static NullSettingsStorage Instance
         {
             get { return _instance; }
         }

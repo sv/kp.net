@@ -3,13 +3,13 @@ using TR.Common;
 
 namespace KpNet.Hosting
 {
-    public sealed class RegistrySettingStorage : ISettingStorage
+    public sealed class RegistrySettingsStorage : ISettingsStorage
     {
         private const int DefaultProcessId = -1;
         
         private readonly string _registryKey;
 
-        public RegistrySettingStorage(string registryKey)
+        public RegistrySettingsStorage(string registryKey)
         {
             Guard.ThrowIfNullOrEmpty(registryKey, "registryKey");
 

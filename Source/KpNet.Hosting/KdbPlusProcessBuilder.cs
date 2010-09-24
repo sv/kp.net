@@ -13,7 +13,7 @@ namespace KpNet.Hosting
         private string _host;
         private int? _port;
         private string _workingDirectory;
-        private ISettingStorage _settingStorage;
+        private ISettingsStorage _settingsStorage;
         private ILogger _logger;
         private string _processName;
         private string _processTitle;
@@ -34,7 +34,7 @@ namespace KpNet.Hosting
 
             _logger = NullLogger.Instance;
 
-            _settingStorage = NullSettingStorage.Instance;
+            _settingsStorage = NullSettingsStorage.Instance;
 
             _processName = "q";
 
@@ -78,13 +78,13 @@ namespace KpNet.Hosting
             return this;
         }
 
-        public KdbPlusProcessBuilder SetSettongsStorage(ISettingStorage storage)
+        public KdbPlusProcessBuilder SetSettingsStorage(ISettingsStorage storage)
         {
             ThrowExceptionfIfProcessCreated();
 
             Guard.ThrowIfNull(storage, "storage");
 
-            _settingStorage = storage;
+            _settingsStorage = storage;
 
             return this;
         }
@@ -164,13 +164,13 @@ namespace KpNet.Hosting
             return this;
         }
 
-        public KdbPlusProcess StartSingle()
+        public KdbPlusProcess StartNew()
         {
             _processCreated = true;
 
             SingleKdbPlusProcess process = new SingleKdbPlusProcess(_processName, _host, Port, GetCommandLine(),
                                             _processTitle, _workingDirectory, _logger,
-                                            _settingStorage, _commands);
+                                            _settingsStorage, _commands);
 
             process.Start();
 
