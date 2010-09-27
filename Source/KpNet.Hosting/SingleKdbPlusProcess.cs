@@ -7,6 +7,9 @@ using KpNet.KdbPlusClient;
 
 namespace KpNet.Hosting
 {
+    /// <summary>
+    /// Class for the usual Kdb process.
+    /// </summary>
     internal sealed class SingleKdbPlusProcess : KdbPlusProcess
     {
         private const string TestConnectionCommand = @"0"; //ping q process - it should return 0 back
@@ -26,6 +29,18 @@ namespace KpNet.Hosting
         private int _id;
         private readonly string _processKey;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SingleKdbPlusProcess"/> class.
+        /// </summary>
+        /// <param name="processName">Name of the process.</param>
+        /// <param name="host">The host.</param>
+        /// <param name="port">The port.</param>
+        /// <param name="commandLine">The command line.</param>
+        /// <param name="processTitle">The process title.</param>
+        /// <param name="workingDirectory">The working directory.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="storage">The storage.</param>
+        /// <param name="commands">The commands.</param>
         public SingleKdbPlusProcess(string processName, string host, 
                                     int port, string commandLine, string processTitle,
                                     string workingDirectory, ILogger logger, 
@@ -61,6 +76,9 @@ namespace KpNet.Hosting
             _commands = commands;
         }
 
+        /// <summary>
+        /// Starts this instance.
+        /// </summary>
         public override void Start()
         {
             lock (_locker)
@@ -82,14 +100,21 @@ namespace KpNet.Hosting
             }
         }
 
+        /// <summary>
+        /// Kills this instance.
+        /// </summary>
         public override void Kill()
         {
             lock (_locker)
             {
                 KillProcess(_id);
             }
-        }        
-        
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is alive.
+        /// </summary>
+        /// <value><c>true</c> if this instance is alive; otherwise, <c>false</c>.</value>
         public override bool IsAlive
         {
             get
@@ -98,6 +123,10 @@ namespace KpNet.Hosting
             }
         }
 
+        /// <summary>
+        /// Gets the connection.
+        /// </summary>
+        /// <returns>Connection.</returns>
         public override IDatabaseClient GetConnection()
         {
             KdbPlusConnectionStringBuilder builder = new KdbPlusConnectionStringBuilder();

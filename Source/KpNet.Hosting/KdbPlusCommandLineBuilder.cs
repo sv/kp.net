@@ -10,21 +10,37 @@ namespace KpNet.Hosting
         private bool _syncLoggingEnabled;
         private bool _multiThreadingEnabled;
 
+        /// <summary>
+        /// Enables the sync logging.
+        /// </summary>
+        /// <returns>Itself.</returns>
         public KdbPlusCommandLineBuilder EnableSyncLogging()
         {
             return SetSyncLogging(true);
         }
 
+        /// <summary>
+        /// Disables the sync logging.
+        /// </summary>
+        /// <returns>Itself.</returns>
         public KdbPlusCommandLineBuilder DisableSyncLogging()
         {
             return SetSyncLogging(false);
         }
 
+        /// <summary>
+        /// Enables the multi threading.
+        /// </summary>
+        /// <returns>Itself.</returns>
         public KdbPlusCommandLineBuilder EnableMultiThreading()
         {
             return SetMultiThreading(true);
         }
 
+        /// <summary>
+        /// Disables the multi threading.
+        /// </summary>
+        /// <returns>Itself.</returns>
         public KdbPlusCommandLineBuilder DisableMultiThreading()
         {
             return SetMultiThreading(false);
@@ -44,6 +60,11 @@ namespace KpNet.Hosting
             return this;
         }
 
+        /// <summary>
+        /// Sets the port.
+        /// </summary>
+        /// <param name="port">The port.</param>
+        /// <returns>Itself.</returns>
         public KdbPlusCommandLineBuilder SetPort(int? port)
         {
             _port = port;
@@ -51,6 +72,11 @@ namespace KpNet.Hosting
             return this;
         }
 
+        /// <summary>
+        /// Sets the thread count.
+        /// </summary>
+        /// <param name="count">The count.</param>
+        /// <returns>Itself.</returns>
         public KdbPlusCommandLineBuilder SetThreadCount(int? count)
         {
             _threadCount = count;
@@ -58,6 +84,11 @@ namespace KpNet.Hosting
             return this;
         }
 
+        /// <summary>
+        /// Sets the log.
+        /// </summary>
+        /// <param name="log">The log.</param>
+        /// <returns>Itself.</returns>
         public KdbPlusCommandLineBuilder SetLog(string log)
         {
             _log = log;
@@ -65,6 +96,10 @@ namespace KpNet.Hosting
             return this;
         }
 
+        /// <summary>
+        /// Creates new command line.
+        /// </summary>
+        /// <returns>New command line.</returns>
         public string CreateNew()
         {
             StringBuilder builder = new StringBuilder();

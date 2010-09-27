@@ -7,6 +7,9 @@ using KpNet.KdbPlusClient;
 
 namespace KpNet.Hosting
 {
+    /// <summary>
+    /// Class for building Kdb processes. 
+    /// </summary>
     public sealed class KdbPlusProcessBuilder
     {
         private const int DefaultPort = 1001;
@@ -25,6 +28,9 @@ namespace KpNet.Hosting
         private bool _syncLoggingEnabled;
         private bool _multiThreadingEnabled;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KdbPlusProcessBuilder"/> class.
+        /// </summary>
         public KdbPlusProcessBuilder()
         {
             _host = "localhost";
@@ -54,21 +60,37 @@ namespace KpNet.Hosting
             _multiThreadingEnabled = false;
         }
 
+        /// <summary>
+        /// Enables the sync KDB logging.
+        /// </summary>
+        /// <returns>Itself.</returns>
         public KdbPlusProcessBuilder EnableSyncKdbLogging()
         {
             return SetSyncLogging(true);
         }
 
+        /// <summary>
+        /// Disables the sync KDB logging.
+        /// </summary>
+        /// <returns>Itself.</returns>
         public KdbPlusProcessBuilder DisableSyncKdbLogging()
         {
             return SetSyncLogging(false);
         }
 
+        /// <summary>
+        /// Enables the multi threading.
+        /// </summary>
+        /// <returns>Itself.</returns>
         public KdbPlusProcessBuilder EnableMultiThreading()
         {
             return SetMultiThreading(true);
         }
 
+        /// <summary>
+        /// Disables the multi threading.
+        /// </summary>
+        /// <returns>Itself.</returns>
         public KdbPlusProcessBuilder DisableMultiThreading()
         {
             return SetMultiThreading(false);
@@ -87,7 +109,12 @@ namespace KpNet.Hosting
 
             return this;
         }
-        
+
+        /// <summary>
+        /// Sets the port.
+        /// </summary>
+        /// <param name="port">The port.</param>
+        /// <returns>Itself.</returns>
         public KdbPlusProcessBuilder SetPort(int port)
         {
             ThrowExceptionfIfProcessCreated();
@@ -97,6 +124,11 @@ namespace KpNet.Hosting
             return this;
         }
 
+        /// <summary>
+        /// Sets the host.
+        /// </summary>
+        /// <param name="host">The host.</param>
+        /// <returns>Itself.</returns>
         public KdbPlusProcessBuilder SetHost(string host)
         {
             ThrowExceptionfIfProcessCreated();
@@ -108,6 +140,11 @@ namespace KpNet.Hosting
             return this;
         }
 
+        /// <summary>
+        /// Sets the working directory.
+        /// </summary>
+        /// <param name="workingDirectory">The working directory.</param>
+        /// <returns>Itself.</returns>
         public KdbPlusProcessBuilder SetWorkingDirectory(string workingDirectory)
         {
             ThrowExceptionfIfProcessCreated();
@@ -119,6 +156,11 @@ namespace KpNet.Hosting
             return this;
         }
 
+        /// <summary>
+        /// Sets the settings storage.
+        /// </summary>
+        /// <param name="storage">The storage.</param>
+        /// <returns>Itself.</returns>
         public KdbPlusProcessBuilder SetSettingsStorage(ISettingsStorage storage)
         {
             ThrowExceptionfIfProcessCreated();
@@ -130,6 +172,11 @@ namespace KpNet.Hosting
             return this;
         }
 
+        /// <summary>
+        /// Sets the logger.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <returns>Itself.</returns>
         public KdbPlusProcessBuilder SetLogger(ILogger logger)
         {
             ThrowExceptionfIfProcessCreated();
@@ -141,6 +188,11 @@ namespace KpNet.Hosting
             return this;
         }
 
+        /// <summary>
+        /// Sets the name of the process.
+        /// </summary>
+        /// <param name="processName">Name of the process.</param>
+        /// <returns>Itself.</returns>
         public KdbPlusProcessBuilder SetProcessName(string processName)
         {
             ThrowExceptionfIfProcessCreated();
@@ -151,7 +203,12 @@ namespace KpNet.Hosting
 
             return this;
         }
-        
+
+        /// <summary>
+        /// Sets the process title.
+        /// </summary>
+        /// <param name="processTitle">The process title.</param>
+        /// <returns>Itself.</returns>
         public KdbPlusProcessBuilder SetProcessTitle(string processTitle)
         {
             ThrowExceptionfIfProcessCreated();
@@ -163,6 +220,11 @@ namespace KpNet.Hosting
             return this;
         }
 
+        /// <summary>
+        /// Adds the command.
+        /// </summary>
+        /// <param name="command">The command.</param>
+        /// <returns>Itself.</returns>
         public KdbPlusProcessBuilder AddCommand(Action<IDatabaseClient> command)
         {
             ThrowExceptionfIfProcessCreated();
@@ -174,6 +236,11 @@ namespace KpNet.Hosting
             return this;
         }
 
+        /// <summary>
+        /// Adds the commands.
+        /// </summary>
+        /// <param name="commands">The commands.</param>
+        /// <returns>Itself.</returns>
         public KdbPlusProcessBuilder AddCommands(IEnumerable<Action<IDatabaseClient>> commands)
         {
             ThrowExceptionfIfProcessCreated();
@@ -185,6 +252,11 @@ namespace KpNet.Hosting
             return this;
         }
 
+        /// <summary>
+        /// Sets the thread count.
+        /// </summary>
+        /// <param name="count">The count.</param>
+        /// <returns>Itself.</returns>
         public KdbPlusProcessBuilder SetThreadCount(int count)
         {
             ThrowExceptionfIfProcessCreated();
@@ -194,6 +266,11 @@ namespace KpNet.Hosting
             return this;
         }
 
+        /// <summary>
+        /// Sets the KDB log.
+        /// </summary>
+        /// <param name="kdbLog">The KDB log.</param>
+        /// <returns>Itself.</returns>
         public KdbPlusProcessBuilder SetKdbLog(string kdbLog)
         {
             ThrowExceptionfIfProcessCreated();
@@ -205,6 +282,10 @@ namespace KpNet.Hosting
             return this;
         }
 
+        /// <summary>
+        /// Starts new Kdb process.
+        /// </summary>
+        /// <returns>Kdb process.</returns>
         public KdbPlusProcess StartNew()
         {
             _processCreated = true;

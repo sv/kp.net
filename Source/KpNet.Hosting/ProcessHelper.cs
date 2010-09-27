@@ -7,6 +7,9 @@ using System.Threading;
 
 namespace KpNet.Hosting
 {
+    /// <summary>
+    /// Helper class which can start and kill processes.
+    /// </summary>
     internal static class ProcessHelper
     {
         private const int OneMinute = 60 * 1000;
@@ -14,6 +17,14 @@ namespace KpNet.Hosting
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         internal static extern void SetWindowText(IntPtr hWnd, string lpString);
 
+        /// <summary>
+        /// Starts the new process.
+        /// </summary>
+        /// <param name="processName">Name of the process.</param>
+        /// <param name="workerDirectory">The worker directory.</param>
+        /// <param name="commandLine">The command line.</param>
+        /// <param name="title">The title.</param>
+        /// <returns>The id of the created process.</returns>
         public static int StartNewProcess(string processName, string workerDirectory, string commandLine, string title)
         {
             Process kdbProc = new Process
@@ -53,6 +64,11 @@ namespace KpNet.Hosting
             return kdbProc.Id;
         }
 
+        /// <summary>
+        /// Kills the processes.
+        /// </summary>
+        /// <param name="processIds">The process ids.</param>
+        /// <param name="processName">Name of the process.</param>
         public static void KillProcesses(IEnumerable<int> processIds, string processName)
         {
             Process[] processes;
@@ -89,21 +105,6 @@ namespace KpNet.Hosting
             if (exceptions.Count > 0)
                 throw new AggregateException(String.Format(Constants.DefaultCulture, "Kdb+ processes with Ids {0} couldn't be stopped.", FormatterHelper.FormatNumbers(notKilledIds)), exceptions);
 
-        }
-
-        public static bool Exists(int processId, string name)
-        {
-            try
-            {
-                Process process = Process.GetProcessById(processId);
-                if (process.ProcessName == name)
-                    return true;
-                return false;
-            }
-            catch (ArgumentException)
-            {
-                return false;
-            }
-        }
+        }        
     }
 }
