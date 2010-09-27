@@ -22,6 +22,8 @@ namespace KpNet.Hosting
         private string _kdbLog;
         private int? _threadCount;
         private bool _processCreated;
+        private bool _syncLoggingEnabled;
+        private bool _multiThreadingEnabled;
 
         public KdbPlusProcessBuilder()
         {
@@ -46,6 +48,44 @@ namespace KpNet.Hosting
             _kdbLog = string.Empty;
 
             _processCreated = false;
+
+            _syncLoggingEnabled = false;
+
+            _multiThreadingEnabled = false;
+        }
+
+        public KdbPlusProcessBuilder EnableSyncKdbLogging()
+        {
+            return SetSyncLogging(true);
+        }
+
+        public KdbPlusProcessBuilder DisableSyncKdbLogging()
+        {
+            return SetSyncLogging(false);
+        }
+
+        public KdbPlusProcessBuilder EnableMultiThreading()
+        {
+            return SetMultiThreading(true);
+        }
+
+        public KdbPlusProcessBuilder DisableMultiThreading()
+        {
+            return SetMultiThreading(false);
+        }
+
+        private KdbPlusProcessBuilder SetMultiThreading(bool enabled)
+        {
+            _multiThreadingEnabled = enabled;
+
+            return this;
+        }
+
+        private KdbPlusProcessBuilder SetSyncLogging(bool enabled)
+        {
+            _syncLoggingEnabled = enabled;
+
+            return this;
         }
         
         public KdbPlusProcessBuilder SetPort(int port)
@@ -182,7 +222,17 @@ namespace KpNet.Hosting
         {
             KdbPlusCommandLineBuilder builder = new KdbPlusCommandLineBuilder();
 
-            return builder.SetLog(_kdbLog).SetPort(Port).SetThreadCount(_threadCount).BuildCommandLine();
+            if(_syncLoggingEnabled)
+            {
+                builder.EnableSyncLogging();
+            }
+
+            if(_multiThreadingEnabled)
+            {
+                builder.EnableMultiThreading();
+            }
+
+            return builder.SetLog(_kdbLog).SetPort(Port).SetThreadCount(_threadCount).CreateNew();
         }
 
         private void ThrowExceptionfIfProcessCreated()

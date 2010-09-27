@@ -7,6 +7,42 @@ namespace KpNet.Hosting
         private int? _port;
         private int? _threadCount;
         private string _log;
+        private bool _syncLoggingEnabled;
+        private bool _multiThreadingEnabled;
+
+        public KdbPlusCommandLineBuilder EnableSyncLogging()
+        {
+            return SetSyncLogging(true);
+        }
+
+        public KdbPlusCommandLineBuilder DisableSyncLogging()
+        {
+            return SetSyncLogging(false);
+        }
+
+        public KdbPlusCommandLineBuilder EnableMultiThreading()
+        {
+            return SetMultiThreading(true);
+        }
+
+        public KdbPlusCommandLineBuilder DisableMultiThreading()
+        {
+            return SetMultiThreading(false);
+        }
+
+        private KdbPlusCommandLineBuilder SetMultiThreading(bool enabled)
+        {
+            _multiThreadingEnabled = enabled;
+
+            return this;
+        }
+
+        private KdbPlusCommandLineBuilder SetSyncLogging(bool enabled)
+        {
+            _syncLoggingEnabled = enabled;
+
+            return this;
+        }
 
         public KdbPlusCommandLineBuilder SetPort(int? port)
         {
@@ -29,18 +65,18 @@ namespace KpNet.Hosting
             return this;
         }
 
-        public string BuildCommandLine()
+        public string CreateNew()
         {
             StringBuilder builder = new StringBuilder();
 
             if(!string.IsNullOrWhiteSpace(_log))
             {
-                builder.AppendFormat("{0} -l ", _log);
+                builder.AppendFormat(_syncLoggingEnabled ? "{0} -L " : "{0} -l ", _log);
             }
 
             if(_port.HasValue)
             {
-                builder.AppendFormat("-p {0} ", _port.Value);
+                builder.AppendFormat(_multiThreadingEnabled ? "-p -{0} " : "-p {0}", _port.Value);
             }
 
             if(_threadCount.HasValue)
