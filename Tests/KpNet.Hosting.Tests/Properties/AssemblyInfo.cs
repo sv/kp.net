@@ -5,15 +5,14 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("KpNet.Hosting")]
+[assembly: AssemblyTitle("KpNet.Hosting.Tests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("EPAM Systems")]
-[assembly: AssemblyProduct("KpNet.Hosting")]
+[assembly: AssemblyProduct("KpNet.Hosting.Tests")]
 [assembly: AssemblyCopyright("Copyright © EPAM Systems 2010")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: InternalsVisibleTo("KpNet.Hosting.Tests")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
@@ -21,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("ac2b18ea-a557-4d6f-b4ca-6c450886cf59")]
+[assembly: Guid("37a118e1-30b5-4d22-a09f-6246875d959d")]
 
 // Version information for an assembly consists of the following four values:
 //

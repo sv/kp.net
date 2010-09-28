@@ -111,7 +111,7 @@ namespace KpNet.Hosting
 
             if(_port.HasValue)
             {
-                builder.AppendFormat(_multiThreadingEnabled ? "-p -{0} " : "-p {0}", _port.Value);
+                builder.AppendFormat(_multiThreadingEnabled ? "-p -{0} " : "-p {0} ", _port.Value);
             }
 
             if(_threadCount.HasValue)
