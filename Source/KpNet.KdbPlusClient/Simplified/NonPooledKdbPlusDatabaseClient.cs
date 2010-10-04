@@ -156,8 +156,11 @@ namespace KpNet.KdbPlusClient
             CheckInnerState();
 
             Task<object> task = new Task<object>(ostate => DoNativeQuery(query, parameters), state);
-            
-            task.ContinueWith(completedTask => { if (calback != null) calback.Invoke(completedTask); },TaskContinuationOptions.ExecuteSynchronously);
+
+            if (calback != null)
+            {
+                task.ContinueWith(calback.Invoke, TaskContinuationOptions.ExecuteSynchronously);
+            }
 
             task.Start(_scheduler.Value);
 
