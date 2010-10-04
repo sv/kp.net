@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using KpNet.Common;
 using KpNet.KdbPlusClient;
 
@@ -27,10 +28,19 @@ namespace KpNet.Hosting
         /// </summary>
         public override void Start()
         {
-            foreach (KdbPlusProcess process in _processes)
+            try
             {
-                process.Start();
+                foreach (KdbPlusProcess process in _processes)
+                {
+                    process.Start();
+                }
             }
+            catch (Exception)
+            {
+                Kill();
+
+                throw;
+            }            
         }
 
         /// <summary>

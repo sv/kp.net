@@ -317,6 +317,8 @@ namespace KpNet.Hosting
 
             CompositeKdbPlusProcess result = new CompositeKdbPlusProcess(processes);
 
+            result.Start();
+
             return result;
         }
 
