@@ -290,7 +290,7 @@ namespace KpNet.Hosting
         {
             _processCreated = true;
 
-            SingleKdbPlusProcess process = new SingleKdbPlusProcess(_processName, _host, Port, GetCommandLine(),
+            SingleKdbPlusProcess process = new SingleKdbPlusProcess(_processName, _host, Port, GetCommandLine(Port),
                                             _processTitle, _workingDirectory, _logger,
                                             _settingsStorage, _commands);
 
@@ -299,7 +299,28 @@ namespace KpNet.Hosting
             return process;
         }
 
-        private string GetCommandLine()
+        /// <summary>
+        /// Starts new composite Kdb process.
+        /// </summary>
+        /// <param name="count">The count of inner processes.</param>
+        /// <returns></returns>
+        public KdbPlusProcess StartNewComposite(int count)
+        {
+            List<KdbPlusProcess> processes = new List<KdbPlusProcess>(count);            
+
+            for(int i = 0; i < count; i++)
+            {
+                processes.Add(new SingleKdbPlusProcess(_processName, _host, Port + i, GetCommandLine(Port + i),
+                                            _processTitle, _workingDirectory, _logger,
+                                            _settingsStorage, _commands));
+            }
+
+            CompositeKdbPlusProcess result = new CompositeKdbPlusProcess(processes);
+
+            return result;
+        }
+
+        private string GetCommandLine(int port)
         {
             KdbPlusCommandLineBuilder builder = new KdbPlusCommandLineBuilder();
 
@@ -313,7 +334,7 @@ namespace KpNet.Hosting
                 builder.EnableMultiThreading();
             }
 
-            return builder.SetLog(_kdbLog).SetPort(Port).SetThreadCount(_threadCount).CreateNew();
+            return builder.SetLog(_kdbLog).SetPort(port).SetThreadCount(_threadCount).CreateNew();
         }
 
         private void ThrowExceptionfIfProcessCreated()

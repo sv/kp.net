@@ -17,7 +17,7 @@ namespace KpNet.Hosting
 
         private readonly string _processName;
         private readonly string _host;
-        private readonly int _port;
+        private int _port;
         private readonly string _workingDirectory;
         private readonly ILogger _logger;
         private readonly ISettingsStorage _storage;
@@ -240,6 +240,50 @@ namespace KpNet.Hosting
             {
                 _logger.ErrorFormat(exc, "Failed to kill process {0}.", id);
             }
+        }
+
+        /// <summary>
+        /// Sets the port.
+        /// </summary>
+        /// <param name="port">The port.</param>
+        public override void SetPort(int port)
+        {
+            using (IDatabaseClient client = GetConnection())
+            {
+                _port = port;
+
+                string command = string.Format(@"\p {0}", port);
+
+                client.ExecuteScalar(command);
+            }
+        }
+
+        /// <summary>
+        /// Loads the directory.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        public override void LoadDirectory(string path)
+        {
+            Load(path);
+        }
+
+        /// <summary>
+        /// Loads the file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        public override void LoadFile(string path)
+        {
+            Load(path);
+        }
+
+        private void Load(string path)
+        {
+            using (IDatabaseClient client = GetConnection())
+            {
+                string command = string.Format(@"\l {0}", path);
+
+                client.ExecuteScalar(command);
+            }            
         }
     }
 }

@@ -44,5 +44,23 @@ namespace KpNet.Hosting
         {
             get { return new KdbPlusProcessBuilder(); }
         }
+
+        /// <summary>
+        /// Sets the port.
+        /// </summary>
+        /// <param name="port">The port.</param>
+        public abstract void SetPort(int port);
+
+        /// <summary>
+        /// Loads the directory.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        public abstract void LoadDirectory(string path);
+
+        /// <summary>
+        /// Loads the file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        public abstract void LoadFile(string path);
     }
 }

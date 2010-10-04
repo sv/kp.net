@@ -40,6 +40,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CompositeDatabaseClient.cs" />
+    <Compile Include="CompositeKdbPlusProcess.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="FormatterHelper.cs" />
     <Compile Include="ISettingsStorage.cs" />
