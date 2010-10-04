@@ -5,6 +5,8 @@ using System.Data.Common;
 using System.Globalization;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Threading.Tasks.Schedulers;
 using Kdbplus;
 using KpNet.Common;
 
@@ -23,6 +25,28 @@ namespace KpNet.KdbPlusClient
         private DateTime _created;
         private readonly KdbPlusConnectionStringBuilder _builder;
         private bool _canBeReused = true;
+        
+        private static readonly Lazy<TaskScheduler> _scheduler = new Lazy<TaskScheduler>(CreateScheduler, LazyThreadSafetyMode.ExecutionAndPublication);
+
+        private static TaskScheduler CreateScheduler()
+        {
+            TaskScheduler scheduler = new IOTaskScheduler();
+            AppDomain.CurrentDomain.DomainUnload += CurrentDomainUnload;
+
+            return scheduler;
+        }
+
+        static void CurrentDomainUnload(object sender, EventArgs e)
+        {
+            if(_scheduler.IsValueCreated)
+            {
+                IDisposable disposable = _scheduler.Value as IDisposable;
+
+                if(disposable != null)
+                    disposable.Dispose();
+            }
+        }
+
 
         public override string ConnectionString
         {
@@ -117,6 +141,44 @@ namespace KpNet.KdbPlusClient
             CheckInnerState();
 
             return DoNativeQuery(query, parameters);
+        }
+
+        /// <summary>
+        /// Runs query in a separate thread pool for IO operations.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <param name="calback">The calback.</param>
+        /// <param name="state">The state.</param>
+        /// <returns></returns>
+        public override IAsyncResult BeginExecuteScalar(string query, object[] parameters, AsyncCallback calback, object state)
+        {
+            CheckInnerState();
+
+            Task<object> task = new Task<object>(ostate => DoNativeQuery(query, parameters), state);
+            
+            task.ContinueWith(completedTask => { if (calback != null) calback.Invoke(completedTask); },TaskContinuationOptions.ExecuteSynchronously);
+
+            task.Start(_scheduler.Value);
+
+            return task;
+        }
+
+        /// <summary>
+        /// Gets the result of the query from BeginExecuteScalar
+        /// </summary>
+        /// <param name="result">The result.</param>
+        /// <returns></returns>
+        public override object EndExecuteScalar(IAsyncResult result)
+        {
+            CheckInnerState();
+
+            Task<object> task = result as Task<object>;
+
+            if(task == null)
+                throw new InvalidOperationException("Invalid result obkject");
+
+            return task.Result;
         }
 
         /// <summary>

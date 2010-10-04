@@ -176,5 +176,18 @@ namespace KpNet.KdbPlusClient
                 return _innerClient.ConnectionString;
             }
         }
+
+        public override IAsyncResult BeginExecuteScalar(string query, object[] parameters, AsyncCallback calback, object state)
+        {
+            ThrowIfDisposed();
+            return _innerClient.BeginExecuteScalar(query, parameters, calback, state);
+        }
+
+        public override object EndExecuteScalar(IAsyncResult result)
+        {
+            ThrowIfDisposed();
+
+            return _innerClient.EndExecuteScalar(result);
+        }
     }
 }

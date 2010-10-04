@@ -62,6 +62,18 @@ namespace KpNet.KdbPlusClient.IntegrationTests.Simplified
         }
 
         [Test(Description = Constants.DescriptionMessage)]
+        public void GetScalar0AsyncTest()
+        {
+            using (IDatabaseClient client = CreateDatabaseClient())
+            {
+                IAsyncResult result = client.BeginExecuteScalar("0", null, null, null);
+                object received = client.EndExecuteScalar(result);
+
+                Assert.IsInstanceOfType(typeof(int), received);
+            }
+        }
+
+        [Test(Description = Constants.DescriptionMessage)]
         public void ExecuteNonQueryTest()
         {
             using (IDatabaseClient client = CreateDatabaseClient())

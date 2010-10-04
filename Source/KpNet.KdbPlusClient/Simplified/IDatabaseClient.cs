@@ -86,6 +86,23 @@ namespace KpNet.KdbPlusClient
         /// <param name="parameters">The query parameters</param>
         /// <returns></returns>
         object ExecuteScalar(string query, params object[] parameters);
+
+        /// <summary>
+        /// Executes the query asynchronously in the special IO threadpool.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <param name="calback">The calback.</param>
+        /// <param name="state">The state.</param>
+        /// <returns></returns>
+        IAsyncResult BeginExecuteScalar(string query, object[] parameters, AsyncCallback calback, object state);
+
+        /// <summary>
+        /// Reseives the result of the query performed by BeginExecuteScalar.
+        /// </summary>
+        /// <param name="result">The result.</param>
+        /// <returns></returns>
+        object EndExecuteScalar(IAsyncResult result);
         
         /// <summary>
         /// Executes the query with multiple result.

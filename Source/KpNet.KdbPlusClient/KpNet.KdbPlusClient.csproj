@@ -69,6 +69,7 @@
     </CodeContractsBaseLineFile>
     <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
     <CodeContractsReferenceAssembly>DoNotBuild</CodeContractsReferenceAssembly>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -120,6 +121,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Threading\IOTaskScheduler.cs" />
     <Compile Include="KdbPlusFatalException.cs" />
     <Compile Include="KdbPlusNull.cs" />
     <Compile Include="KdbPlusParameter.cs" />
@@ -152,7 +154,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Threading\ObjectPool.cs" />
     <Compile Include="Simplified\PooledKdbPlusDatabaseClient.cs" />
+    <Compile Include="Threading\ProducerConsumerCollectionBase.cs" />
     <Compile Include="ThrowHelper.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -223,6 +223,16 @@ namespace KpNet.Hosting
             return result;
         }
 
+        public IAsyncResult BeginExecuteScalar(string query, object[] parameters, AsyncCallback calback, object state)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object EndExecuteScalar(IAsyncResult result)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Executes the query with multiple result.
         /// </summary>
