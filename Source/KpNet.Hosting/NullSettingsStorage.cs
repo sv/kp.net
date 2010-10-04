@@ -35,5 +35,15 @@
         {
             return -1;
         }
+
+
+        /// <summary>
+        /// Removes the process id.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        public void RemoveProcessId(string key)
+        {
+            // Do nothing.
+        }
     }
 }

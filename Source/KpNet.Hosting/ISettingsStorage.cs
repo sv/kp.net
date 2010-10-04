@@ -19,5 +19,11 @@ namespace KpNet.Hosting
         /// <param name="key">The key.</param>
         /// <returns>The process id.</returns>
         int GetProcessId(string key);
+
+        /// <summary>
+        /// Removes the process id.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        void RemoveProcessId(string key);
     }
 }

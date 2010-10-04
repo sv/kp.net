@@ -27,7 +27,7 @@ namespace KpNet.Hosting
 
         private readonly object _locker = new object();
         private int _id;
-        private readonly string _processKey;
+        private string _processKey;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SingleKdbPlusProcess"/> class.
@@ -252,10 +252,21 @@ namespace KpNet.Hosting
             {
                 _port = port;
 
+                UpdateSettingsStorage();
+
                 string command = string.Format(@"\p {0}", port);
 
                 client.ExecuteScalar(command);
             }
+        }
+
+        private void UpdateSettingsStorage()
+        {
+            _storage.RemoveProcessId(_processKey);
+
+            _processKey = string.Format("{0}_{1}", _host, _port);
+
+            _storage.SetProcessId(_processKey, _id);
         }
 
         /// <summary>

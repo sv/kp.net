@@ -49,6 +49,18 @@ namespace KpNet.Hosting
             }
         }
 
+        /// <summary>
+        /// Removes the process id.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        public void RemoveProcessId(string key)
+        {
+            using (RegistryKey registryKey = GetRegistryKey())
+            {
+                registryKey.DeleteValue(key);
+            }
+        }
+
         private RegistryKey GetRegistryKey()
         {
             RegistryKey regKey = Registry.LocalMachine.OpenSubKey(_registryKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
