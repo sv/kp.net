@@ -175,13 +175,15 @@ namespace KpNet.KdbPlusClient
         public override object EndExecuteScalar(IAsyncResult result)
         {
             CheckInnerState();
-
+            
             Task<object> task = result as Task<object>;
-
-            if(task == null)
-                throw new InvalidOperationException("Invalid result obkject");
-
-            return task.Result;
+            if (task == null)
+                    throw new InvalidOperationException("Invalid result object");
+            
+            using (task)
+            {
+                return task.Result;
+            }
         }
 
         /// <summary>
