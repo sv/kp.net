@@ -135,7 +135,7 @@ namespace KpNet.Hosting
 
             builder.Server = _host;
 
-            KdbPlusDatabaseClient client = KdbPlusDatabaseClient.Factory.CreateNewClient(builder);
+            KdbPlusDatabaseClient client = KdbPlusDatabaseClient.Factory.CreateNonPooledClient(builder);
 
             client.SendTimeout = TimeSpan.FromMinutes(15);
 
