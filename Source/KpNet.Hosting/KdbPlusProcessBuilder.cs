@@ -346,8 +346,9 @@ namespace KpNet.Hosting
 
             for(int i = 0; i < count; i++)
             {
-                processes.Add(new SingleKdbPlusProcess(_processName, _host, Port + i, GetCommandLine(Port + i),
-                                            _processTitle, _workingDirectory, _logger,
+                int port = Port + i;
+                processes.Add(new SingleKdbPlusProcess(_processName, _host, port, GetCommandLine(port),
+                                            string.Format("{0}_{1}", _processTitle, port), _workingDirectory, _logger,
                                             _settingsStorage, _preStartCommands, _setupCommands));
             }
 
