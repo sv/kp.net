@@ -21,7 +21,8 @@ namespace KpNet.Hosting
         private ILogger _logger;
         private string _processName;
         private string _processTitle;
-        private readonly List<Action<IDatabaseClient>> _commands;
+        private readonly List<Action<IDatabaseClient>> _setupCommands;
+        private readonly List<Action> _preStartCommands;
         private string _kdbLog;
         private int? _threadCount;
         private bool _processCreated;
@@ -49,7 +50,9 @@ namespace KpNet.Hosting
 
             _processTitle = string.Empty;
 
-            _commands = new List<Action<IDatabaseClient>>();            
+            _setupCommands = new List<Action<IDatabaseClient>>();  
+          
+            _preStartCommands = new List<Action>();
 
             _kdbLog = string.Empty;
 
@@ -220,34 +223,67 @@ namespace KpNet.Hosting
             return this;
         }
 
+
         /// <summary>
-        /// Adds the command.
+        /// Adds the setup command.
         /// </summary>
         /// <param name="command">The command.</param>
-        /// <returns>Itself.</returns>
-        public KdbPlusProcessBuilder AddCommand(Action<IDatabaseClient> command)
+        /// <returns></returns>
+        public KdbPlusProcessBuilder AddSetupCommand(Action<IDatabaseClient> command)
         {
             ThrowExceptionfIfProcessCreated();
 
             Guard.ThrowIfNull(command, "command");
 
-            _commands.Add(command);
+            _setupCommands.Add(command);
 
             return this;
         }
 
         /// <summary>
-        /// Adds the commands.
+        /// Adds the setup commands.
         /// </summary>
         /// <param name="commands">The commands.</param>
-        /// <returns>Itself.</returns>
-        public KdbPlusProcessBuilder AddCommands(IEnumerable<Action<IDatabaseClient>> commands)
+        /// <returns></returns>
+        public KdbPlusProcessBuilder AddSetupCommands(IEnumerable<Action<IDatabaseClient>> commands)
         {
             ThrowExceptionfIfProcessCreated();
 
             Guard.ThrowIfNull(commands, "commands");
 
-            _commands.AddRange(commands);
+            _setupCommands.AddRange(commands);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds the pre start command.
+        /// </summary>
+        /// <param name="command">The command.</param>
+        /// <returns></returns>
+        public KdbPlusProcessBuilder AddPreStartCommand(Action command)
+        {
+            ThrowExceptionfIfProcessCreated();
+
+            Guard.ThrowIfNull(command, "command");
+
+            _preStartCommands.Add(command);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds the pre start commands.
+        /// </summary>
+        /// <param name="commands">The commands.</param>
+        /// <returns></returns>
+        public KdbPlusProcessBuilder AddPreStartCommands(IEnumerable<Action> commands)
+        {
+            ThrowExceptionfIfProcessCreated();
+
+            Guard.ThrowIfNull(commands, "commands");
+
+            _preStartCommands.AddRange(commands);
 
             return this;
         }
@@ -292,7 +328,7 @@ namespace KpNet.Hosting
 
             SingleKdbPlusProcess process = new SingleKdbPlusProcess(_processName, _host, Port, GetCommandLine(Port),
                                             _processTitle, _workingDirectory, _logger,
-                                            _settingsStorage, _commands);
+                                            _settingsStorage, _preStartCommands, _setupCommands);
 
             process.Start();
 
@@ -312,7 +348,7 @@ namespace KpNet.Hosting
             {
                 processes.Add(new SingleKdbPlusProcess(_processName, _host, Port + i, GetCommandLine(Port + i),
                                             _processTitle, _workingDirectory, _logger,
-                                            _settingsStorage, _commands));
+                                            _settingsStorage, _preStartCommands, _setupCommands));
             }
 
             CompositeKdbPlusProcess result = new CompositeKdbPlusProcess(processes);

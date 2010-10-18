@@ -23,11 +23,13 @@ namespace KpNet.Hosting
         private readonly ISettingsStorage _storage;
         private readonly string _commandLine;
         private readonly string _processTitle;
-        private readonly List<Action<IDatabaseClient>> _commands;
+        private readonly List<Action<IDatabaseClient>> _setupCommands;
+        private readonly List<Action> _preStartCommands;
 
         private readonly object _locker = new object();
         private int _id;
         private string _processKey;
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SingleKdbPlusProcess"/> class.
@@ -40,16 +42,19 @@ namespace KpNet.Hosting
         /// <param name="workingDirectory">The working directory.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="storage">The storage.</param>
-        /// <param name="commands">The commands.</param>
+        /// <param name="preStartCommands">The pre-start commands.</param>
+        /// <param name="setupCommands">The setup commands.</param>
         public SingleKdbPlusProcess(string processName, string host, 
                                     int port, string commandLine, string processTitle,
                                     string workingDirectory, ILogger logger, 
                                     ISettingsStorage storage,
-                                    List<Action<IDatabaseClient>> commands)
+                                    List<Action> preStartCommands,
+                                    List<Action<IDatabaseClient>> setupCommands)
         {
             Guard.ThrowIfNull(logger, "logger");
             Guard.ThrowIfNull(storage, "storage");
-            Guard.ThrowIfNull(commands, "commands");
+            Guard.ThrowIfNull(setupCommands, "setupCommands");
+            Guard.ThrowIfNull(preStartCommands, "preStartCommands");
             Guard.ThrowIfNullOrEmpty(processName, "processName");
             Guard.ThrowIfNullOrEmpty(host, "host");
             Guard.ThrowIfNullOrEmpty(workingDirectory, "workingDirectory");
@@ -73,7 +78,8 @@ namespace KpNet.Hosting
                 _processTitle = _processKey;
             }
 
-            _commands = commands;
+            _setupCommands = setupCommands;
+            _preStartCommands = preStartCommands;
         }
 
         /// <summary>
@@ -152,6 +158,8 @@ namespace KpNet.Hosting
             {
                 _logger.InfoFormat("Starting Kdb+ process ({0}:{1}) with command line: {2}.", _host, _port, _commandLine);
 
+                ExecutePrestartCommands();
+
                 processId = StartNewProcess(_commandLine);
 
                 CheckIfProcessIsRepsponding();
@@ -171,13 +179,24 @@ namespace KpNet.Hosting
             return processId;
         }
 
+        private void ExecutePrestartCommands()
+        {
+            if(_preStartCommands.Count > 0)
+            {
+                foreach (Action command in _preStartCommands)
+                {
+                    command.Invoke();
+                }
+            }
+        }
+
         private void SetupProcess()
         {
-            if(_commands.Count > 0)
+            if(_setupCommands.Count > 0)
             {
                 using (IDatabaseClient client = GetConnection())
                 {
-                    foreach (Action<IDatabaseClient> command in _commands)
+                    foreach (Action<IDatabaseClient> command in _setupCommands)
                     {
                         command(client);
                     }
