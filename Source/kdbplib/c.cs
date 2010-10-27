@@ -1,10 +1,10 @@
 ﻿// kdb+ provider from kx. 
 // taken from https://code.kx.com/trac/browser/kx/kdb%2B/c/c.cs.
-// There may be new version available.
+// There may be newer version available.
 // Minor changes:
-// 1. The class was included into Kdbplus namespace.
-// 2. Added constructor to accept buffer size limit.
-namespace Kdbplus
+// 1. Added constructor to accept buffer size limit.
+// 2. Added c.NULL(Type t) method.
+namespace kx
 {
     //2010.08.05 Added KException for exceptions due to server error, authentication fail and func decode
     //2010.01.14 Exposed static var e (Encoding) as public
@@ -121,6 +121,12 @@ namespace Kdbplus
             private static object NULL(char c)
             {
                 return NU[" b  xhijefcspmdznuvt".IndexOf(c)];
+            }
+
+            public static object NULL(Type t)
+            {
+                int index = -GetIndexForType(t);
+                return NU[index];
             }
 
             public static bool qn(object x)
@@ -374,124 +380,74 @@ namespace Kdbplus
 
             private static int t(object x)
             {
-                return x is bool
-                           ? -1
-                           : x is byte
-                                 ? -4
-                                 : x is short
-                                       ? -5
-                                       : x is int
-                                             ? -6
-                                             : x is long
-                                                   ? -7
-                                                   : x is float
-                                                         ? -8
-                                                         : x is double
-                                                               ? -9
-                                                               : x is char
-                                                                     ? -10
-                                                                     : x is string
-                                                                           ? -11
-                                                                           : x is DateTime
-                                                                                 ? -12
-                                                                                 : x is Month
-                                                                                       ? -13
-                                                                                       : x is Date
-                                                                                             ? -14
-                                                                                             : x is DateTime
-                                                                                                   ? -15
-                                                                                                   : x is KTimespan
-                                                                                                         ? -16
-                                                                                                         : x is Minute
-                                                                                                               ? -17
-                                                                                                               : x is
-                                                                                                                 Second
-                                                                                                                     ? -18
-                                                                                                                     : x
-                                                                                                                       is
-                                                                                                                       TimeSpan
-                                                                                                                           ? -19
-                                                                                                                           : x
-                                                                                                                             is
-                                                                                                                             bool
-                                                                                                                                 [
-                                                                                                                                 ]
-                                                                                                                                 ? 1
-                                                                                                                                 : x
-                                                                                                                                   is
-                                                                                                                                   byte
-                                                                                                                                       [
-                                                                                                                                       ]
-                                                                                                                                       ? 4
-                                                                                                                                       : x
-                                                                                                                                         is
-                                                                                                                                         short
-                                                                                                                                             [
-                                                                                                                                             ]
-                                                                                                                                             ? 5
-                                                                                                                                             : x
-                                                                                                                                               is
-                                                                                                                                               int
-                                                                                                                                                   [
-                                                                                                                                                   ]
-                                                                                                                                                   ? 6
-                                                                                                                                                   : x
-                                                                                                                                                     is
-                                                                                                                                                     long
-                                                                                                                                                         [
-                                                                                                                                                         ]
-                                                                                                                                                         ? 7
-                                                                                                                                                         : x
-                                                                                                                                                           is
-                                                                                                                                                           float
-                                                                                                                                                               [
-                                                                                                                                                               ]
-                                                                                                                                                               ? 8
-                                                                                                                                                               : x
-                                                                                                                                                                 is
-                                                                                                                                                                 double
-                                                                                                                                                                     [
-                                                                                                                                                                     ]
-                                                                                                                                                                     ? 9
-                                                                                                                                                                     : x
-                                                                                                                                                                       is
-                                                                                                                                                                       char
-                                                                                                                                                                           [
-                                                                                                                                                                           ]
-                                                                                                                                                                           ? 10
-                                                                                                                                                                           : x
-                                                                                                                                                                             is
-                                                                                                                                                                             DateTime
-                                                                                                                                                                                 [
-                                                                                                                                                                                 ]
-                                                                                                                                                                                 ? 12
-                                                                                                                                                                                 : x
-                                                                                                                                                                                   is
-                                                                                                                                                                                   DateTime
-                                                                                                                                                                                       [
-                                                                                                                                                                                       ]
-                                                                                                                                                                                       ? 15
-                                                                                                                                                                                       : x
-                                                                                                                                                                                         is
-                                                                                                                                                                                         KTimespan
-                                                                                                                                                                                             [
-                                                                                                                                                                                             ]
-                                                                                                                                                                                             ? 16
-                                                                                                                                                                                             : x
-                                                                                                                                                                                               is
-                                                                                                                                                                                               TimeSpan
-                                                                                                                                                                                                   [
-                                                                                                                                                                                                   ]
-                                                                                                                                                                                                   ? 19
-                                                                                                                                                                                                   : x
-                                                                                                                                                                                                     is
-                                                                                                                                                                                                     Flip
-                                                                                                                                                                                                         ? 98
-                                                                                                                                                                                                         : x
-                                                                                                                                                                                                           is
-                                                                                                                                                                                                           Dict
-                                                                                                                                                                                                               ? 99
-                                                                                                                                                                                                               : 0;
+                if(x == null)
+                    return 0;
+                return GetIndexForType(x.GetType());
+            }
+
+            private static int GetIndexForType(Type type)
+            {
+                if (type == typeof(Boolean))
+                    return -1;
+                if (type == typeof(Byte))
+                    return -4;
+                if (type == typeof(Int16))
+                    return -5;
+                if (type == typeof(Int32))
+                    return -6;
+                if (type == typeof(Int64))
+                    return -7;
+                if (type == typeof(Single))
+                    return -8;
+                if (type == typeof(Double))
+                    return -9;
+                if (type == typeof(Char))
+                    return -10;
+                if (type == typeof(String))
+                    return -11;
+                if (type == typeof(DateTime))
+                    return -12;
+                if (type == typeof(Month))
+                    return -13;
+                if (type == typeof(Date))
+                    return -14;
+                if (type == typeof(KTimespan))
+                    return -16;
+                if (type == typeof(Minute))
+                    return -17;
+                if (type == typeof(Second))
+                    return -18;
+                if (type == typeof(TimeSpan))
+                    return -19;
+                if (type == typeof(Boolean[]))
+                    return 1;
+                if (type == typeof(Byte[]))
+                    return 4;
+                if (type == typeof(Int16[]))
+                    return 5;
+                if (type == typeof(Int32[]))
+                    return 6;
+                if (type == typeof(Int64[]))
+                    return 7;
+                if (type == typeof(Single[]))
+                    return 8;
+                if (type == typeof(Double[]))
+                    return 9;
+                if (type == typeof(Char[]))
+                    return 10;
+                if (type == typeof(DateTime[]))
+                    return 12;
+                if (type == typeof(KTimespan[]))
+                    return 16;
+                if (type == typeof(TimeSpan[]))
+                    return 19;
+                if (type == typeof(Flip))
+                    return 98;
+                if (type == typeof(Dict))
+                    return 99;
+                        
+                return 0;
+                
             }
 
             private static int[] nt = {0, 1, 0, 0, 1, 2, 4, 8, 4, 8, 1, 0, 8, 4, 4, 8, 8, 4, 4, 4};

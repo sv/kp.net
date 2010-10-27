@@ -122,9 +122,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataConverterExtensions.cs" />
     <Compile Include="Threading\IOTaskScheduler.cs" />
     <Compile Include="KdbPlusFatalException.cs" />
-    <Compile Include="KdbPlusNull.cs" />
     <Compile Include="KdbPlusParameter.cs" />
     <Compile Include="KdbPlusParameterCollection.cs" />
     <Compile Include="Simplified\BalancingKdbPlusDatabaseClient.cs" />

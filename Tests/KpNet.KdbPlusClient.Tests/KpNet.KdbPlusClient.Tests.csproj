@@ -85,6 +85,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataConverterExtensionsTest.cs" />
     <Compile Include="KdbDataReaderTest.cs" />
     <Compile Include="KdbMultipleResultTest.cs" />
     <Compile Include="KdbPlusConnectionStringBuilderTest.cs" />

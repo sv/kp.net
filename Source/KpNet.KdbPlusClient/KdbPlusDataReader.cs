@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using Kdbplus;
 using KpNet.Common;
+using kx;
 
 namespace KpNet.KdbPlusClient
 {
@@ -161,7 +161,8 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override object GetValue(int i)
         {
-            return c.at(_result.y[i], _currentRowIndex);
+            object result = c.at(_result.y[i], _currentRowIndex);
+            return result ?? DBNull.Value;
         }
 
         /// <summary>

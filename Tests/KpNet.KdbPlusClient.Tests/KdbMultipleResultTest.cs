@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using Kdbplus;
+﻿using kx;
+using NUnit.Framework;
 using System.Data;
 using System;
 

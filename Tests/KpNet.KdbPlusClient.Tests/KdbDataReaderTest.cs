@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Data;
-using Kdbplus;
+using kx;
 using NUnit.Framework;
 
 namespace KpNet.KdbPlusClient.Tests
@@ -221,6 +221,27 @@ namespace KpNet.KdbPlusClient.Tests
             Assert.AreEqual(3, reader.GetInt32(0));
             Assert.AreEqual("zina", reader.GetString(1));
 
+            Assert.AreEqual(false, reader.Read());
+        }
+
+        [Test]
+        public void NullsAreReadAsDbNullsTest()
+        {
+            c.Flip result =
+            new c.Flip(new c.Dict(new[] { "id", "name" }, new object[] { new[] { 1, (int)c.NULL(typeof(int))}, new[] { "sasha", String.Empty} }));
+
+            KdbPlusDataReader reader = new KdbPlusDataReader(result);
+
+            Assert.AreEqual(true, reader.Read());
+
+            Assert.AreEqual(1, Int32.Parse(reader.GetValue(0).ToString()));
+            Assert.AreEqual("sasha", reader.GetValue(1).ToString());
+
+            Assert.AreEqual(true, reader.Read());
+
+            Assert.AreEqual(DBNull.Value, reader.GetValue(0));
+            Assert.AreEqual(DBNull.Value, reader.GetValue(1));
+            
             Assert.AreEqual(false, reader.Read());
         }
     }
