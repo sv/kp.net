@@ -11,6 +11,7 @@ namespace KpNet.KdbPlusClient
         public const string ParameterNamePrefix = "@";
 
         private DbType _dbType = DbType.Object;
+        
         private string _name;
         private object _value;
         public event EventHandler ParameterChanged;
@@ -112,7 +113,49 @@ namespace KpNet.KdbPlusClient
             get
             {
                 if (_dbType == DbType.String)
+                {
+                    if (String.IsNullOrEmpty((string)_value))
+                        return "`";
+
                     return String.Format(CultureInfo.InvariantCulture, "`$\"{0}\"", _value);
+                }
+
+                if (_dbType == DbType.Int16 && _value == null)
+                    return "0Nh";
+
+                if (_dbType == DbType.Int32 && _value == null)
+                    return "0N";
+
+                if (_dbType == DbType.Int64 && _value == null)
+                    return "0Nj";
+
+                if (_dbType == DbType.Single && _value == null)
+                    return "0Ne";
+
+                if (_dbType == DbType.Double && _value == null)
+                    return "0n";
+
+                if (_dbType == DbType.StringFixedLength)
+                {
+                    if(_value == null)
+                        return String.Empty;
+                    return String.Format(CultureInfo.InvariantCulture, "\"{0}\"", _value);
+                }
+
+                if (_dbType == DbType.DateTime)
+                {
+                    if(_value == null)
+                        return "0Nz";
+                    return ((DateTime)_value).ToString("yyyy.MM.ddTHH:mm:ss.fff");
+                }
+
+                if (_dbType == DbType.Time)
+                {
+                    if (_value == null)
+                        return "0Nt";
+                    return ((TimeSpan)_value).ToString("HH:mm:ss.fff");
+                }
+
                 return _value.ToString();
             }
         }
@@ -127,6 +170,9 @@ namespace KpNet.KdbPlusClient
 
         private static DbType InferType(Object value)
         {
+            if (value == null)
+                return DbType.Object;
+
             switch (Type.GetTypeCode(value.GetType()))
             {
                 case TypeCode.Empty:
@@ -134,9 +180,10 @@ namespace KpNet.KdbPlusClient
 
                 case TypeCode.Object:
                     return DbType.Object;
+                case TypeCode.Char:
+                    return DbType.StringFixedLength;
 
                 case TypeCode.DBNull:
-                case TypeCode.Char:
                 case TypeCode.SByte:
                 case TypeCode.UInt16:
                 case TypeCode.UInt32:
