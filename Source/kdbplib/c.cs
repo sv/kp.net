@@ -4,6 +4,8 @@
 // Minor changes:
 // 1. Added constructor to accept buffer size limit.
 // 2. Added c.NULL(Type t) method.
+// 3. Types Date, Month, Minute, Second, KTimeSpan were made serializable. 
+// Also default constructors were added for xml serialization.
 namespace kx
 {
     //2010.08.05 Added KException for exceptions due to server error, authentication fail and func decode
@@ -170,9 +172,14 @@ namespace kx
 
             private static DateTime za = DateTime.MinValue, zw = DateTime.MaxValue;
 
+            [Serializable]
             public class Date
             {
                 public int i;
+
+                private Date()
+                {
+                }
 
                 public Date(int x)
                 {
@@ -214,9 +221,14 @@ namespace kx
                 }
             }
 
+            [Serializable]
             public class Month
             {
                 public int i;
+
+                private Month()
+                {
+                }
 
                 public Month(int x)
                 {
@@ -243,9 +255,14 @@ namespace kx
                 }
             }
 
+            [Serializable]
             public class Minute
             {
                 public int i;
+
+                private Minute()
+                {
+                }
 
                 public Minute(int x)
                 {
@@ -271,9 +288,14 @@ namespace kx
                 }
             }
 
+            [Serializable]
             public class Second
             {
                 public int i;
+
+                private Second()
+                {
+                }
 
                 public Second(int x)
                 {
@@ -299,9 +321,14 @@ namespace kx
                 }
             }
 
+            [Serializable]
             public class KTimespan
             {
                 public TimeSpan t;
+
+                private KTimespan()
+                {
+                }
 
                 public KTimespan(long x)
                 {
