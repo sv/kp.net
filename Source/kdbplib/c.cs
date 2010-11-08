@@ -6,6 +6,7 @@
 // 2. Added c.NULL(Type t) method.
 // 3. Types Date, Month, Minute, Second, KTimeSpan were made serializable. 
 // Also default constructors were added for xml serialization.
+// 4. Types Date, Month, Minute, Second, KTimeSpan now implement IComparable.
 namespace kx
 {
     //2010.08.05 Added KException for exceptions due to server error, authentication fail and func decode
@@ -173,7 +174,7 @@ namespace kx
             private static DateTime za = DateTime.MinValue, zw = DateTime.MaxValue;
 
             [Serializable]
-            public class Date
+            public class Date : IComparable
             {
                 public int i;
 
@@ -219,10 +220,22 @@ namespace kx
                 {
                     return i;
                 }
+
+                public int CompareTo(object obj)
+                {
+                    if (obj == null)
+                        return 1;
+                    
+                    Date other = obj as Date;
+                    if (other == null)
+                        return 1;
+
+                    return i.CompareTo(other.i);
+                }
             }
 
             [Serializable]
-            public class Month
+            public class Month:IComparable
             {
                 public int i;
 
@@ -253,10 +266,22 @@ namespace kx
                 {
                     return i;
                 }
+
+                public int CompareTo(object obj)
+                {
+                    if (obj == null)
+                        return 1;
+
+                    Month other = obj as Month;
+                    if (other == null)
+                        return 1;
+
+                    return i.CompareTo(other.i);
+                }
             }
 
             [Serializable]
-            public class Minute
+            public class Minute:IComparable
             {
                 public int i;
 
@@ -286,10 +311,22 @@ namespace kx
                 {
                     return i;
                 }
+
+                public int CompareTo(object obj)
+                {
+                    if (obj == null)
+                        return 1;
+
+                    Minute other = obj as Minute;
+                    if (other == null)
+                        return 1;
+
+                    return i.CompareTo(other.i);
+                }
             }
 
             [Serializable]
-            public class Second
+            public class Second:IComparable
             {
                 public int i;
 
@@ -319,10 +356,22 @@ namespace kx
                 {
                     return i;
                 }
+
+                public int CompareTo(object obj)
+                {
+                    if (obj == null)
+                        return 1;
+
+                    Second other = obj as Second;
+                    if (other == null)
+                        return 1;
+
+                    return i.CompareTo(other.i);
+                }
             }
 
             [Serializable]
-            public class KTimespan
+            public class KTimespan:IComparable
             {
                 public TimeSpan t;
 
@@ -351,6 +400,18 @@ namespace kx
                 public override int GetHashCode()
                 {
                     return t.GetHashCode();
+                }
+
+                public int CompareTo(object obj)
+                {
+                    if (obj == null)
+                        return 1;
+
+                    KTimespan other = obj as KTimespan;
+                    if (other == null)
+                        return 1;
+
+                    return t.CompareTo(other.t);
                 }
             }
 

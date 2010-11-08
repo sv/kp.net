@@ -393,7 +393,7 @@ namespace KpNet.KdbPlusClient
         /// </exception>
         public override bool IsDBNull(int i)
         {
-            return GetValue(i) == null;
+            return GetValue(i) == DBNull.Value;
         }
 
         public override DataTable GetSchemaTable()
