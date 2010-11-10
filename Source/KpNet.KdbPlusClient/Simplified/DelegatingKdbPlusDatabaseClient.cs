@@ -95,6 +95,15 @@ namespace KpNet.KdbPlusClient
             }
         }
 
+        public override int Port
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return _innerClient.Port;
+            }
+        }
+
 
         public override DbDataReader ExecuteQuery(string query, params object[] parameters)
         {

@@ -24,6 +24,35 @@ namespace KpNet.Hosting
         }
 
         /// <summary>
+        /// Restarts this instance.
+        /// </summary>
+        public override bool Restart(out IDatabaseClient client)
+        {
+            List<IDatabaseClient> connections = new List<IDatabaseClient>();
+
+            foreach (KdbPlusProcess process in _processes)
+            {
+                IDatabaseClient dbClient;
+
+                if(process.Restart(out dbClient))
+                {
+                    connections.Add(dbClient);
+                }
+            }
+
+            if(connections.Count > 0)
+            {
+                client = new CompositeDatabaseClient(connections);
+
+                return true;
+            }
+
+            client = null;
+
+            return false;
+        }
+
+        /// <summary>
         /// Starts this instance.
         /// </summary>
         public override void Start()

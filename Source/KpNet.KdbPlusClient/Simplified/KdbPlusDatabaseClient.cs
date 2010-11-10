@@ -146,6 +146,12 @@ namespace KpNet.KdbPlusClient
         public abstract string ConnectionString { get; }
 
         /// <summary>
+        /// Gets the port.
+        /// </summary>
+        /// <value>The port.</value>
+        public abstract int Port { get; }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is pooled.
         /// </summary>
         /// <value><c>true</c> if this instance is pooled; otherwise, <c>false</c>.</value>

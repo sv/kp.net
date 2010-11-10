@@ -83,6 +83,29 @@ namespace KpNet.Hosting
         }
 
         /// <summary>
+        /// Restarts this instance.
+        /// </summary>
+        public override bool Restart(out IDatabaseClient client)
+        {
+            client = null;
+
+            lock(_locker)
+            {
+                if (!IsAlive)
+                {
+                    Start();
+
+                    client = GetConnection();
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+
+        /// <summary>
         /// Starts this instance.
         /// </summary>
         public override void Start()

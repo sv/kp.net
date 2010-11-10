@@ -44,6 +44,29 @@ namespace KpNet.Hosting
         }
 
         /// <summary>
+        /// Gets the port.
+        /// </summary>
+        /// <value>The port.</value>
+        public int Port
+        {
+            get { throw new InvalidOperationException("This operation is invalid for this type of client."); }
+        }
+
+        public List<int> Ports
+        {
+            get
+            {
+                List<int> ports = new List<int>();
+
+                foreach (IDatabaseClient client in _innerClients)
+                {
+                    ports.Add(client.Port);
+                }
+
+                return ports;
+            }
+        }
+        /// <summary>
         /// Gets or sets the send timeout.
         /// </summary>
         /// <value>The send timeout.</value>

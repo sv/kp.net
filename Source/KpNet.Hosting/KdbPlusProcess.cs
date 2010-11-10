@@ -13,6 +13,13 @@ namespace KpNet.Hosting
         protected KdbPlusProcess()
         {}
 
+
+        /// <summary>
+        /// Restarts this instance.
+        /// </summary>
+        /// <returns>Connection</returns>
+        public abstract bool Restart(out IDatabaseClient client);
+
         /// <summary>
         /// Starts this instance.
         /// </summary>

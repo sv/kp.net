@@ -10,6 +10,12 @@ namespace KpNet.KdbPlusClient
     public interface IDatabaseClient : IDisposable
     {
         /// <summary>
+        /// Gets the port.
+        /// </summary>
+        /// <value>The port.</value>
+        int Port { get; }
+
+        /// <summary>
         /// Gets or sets the send timeout.
         /// </summary>
         /// <value>The send timeout.</value>

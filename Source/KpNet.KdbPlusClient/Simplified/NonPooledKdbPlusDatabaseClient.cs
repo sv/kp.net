@@ -53,6 +53,11 @@ namespace KpNet.KdbPlusClient
             get { return _builder.ConnectionString; }
         }
 
+        public override int Port
+        {
+            get { return _builder.Port; }
+        }
+
         static NonPooledKdbPlusDatabaseClient()
         {
             c.e = Encoding.UTF8;
