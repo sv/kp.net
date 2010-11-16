@@ -23,6 +23,7 @@ namespace KpNet.KdbPlusClient
         private TimeSpan _receiveTimeout = TimeSpan.FromMinutes(1);
         private TimeSpan _sendTimeout = TimeSpan.FromMinutes(1);
         private DateTime _created;
+        private DateTime _lastUsed;
         private readonly KdbPlusConnectionStringBuilder _builder;
         private bool _canBeReused = true;
         
@@ -243,6 +244,7 @@ namespace KpNet.KdbPlusClient
         public override object Receive()
         {
             CheckInnerState();
+            RefreshLastUsed();
 
             try
             {
@@ -383,7 +385,10 @@ namespace KpNet.KdbPlusClient
 
         #endregion
 
-
+        internal DateTime LastUsed
+        {
+            get { return _lastUsed; }
+        }
 
         private void Initialize(string server, int port, string userId, string password, int bufferSize)
         {
@@ -400,6 +405,7 @@ namespace KpNet.KdbPlusClient
                     ReceiveTimeout = ToMilliSeconds(_receiveTimeout)
                 };
                 _created = DateTime.Now;
+                RefreshLastUsed();
             }
             catch (Exception ex)
             {
@@ -440,6 +446,8 @@ namespace KpNet.KdbPlusClient
 
         private object DoNativeQuery(string query, params object[] parameters)
         {
+            RefreshLastUsed();
+
             try
             {
                 int length;
@@ -475,6 +483,8 @@ namespace KpNet.KdbPlusClient
 
         private void DoNativeOneWayQuery(string query, params object[] parameters)
         {
+            RefreshLastUsed();
+
             try
             {
                 int length;
@@ -564,6 +574,11 @@ namespace KpNet.KdbPlusClient
                 table.Load(reader);
                 return table;
             }
+        }
+
+        private void RefreshLastUsed()
+        {
+            _lastUsed = DateTime.Now;
         }
     }
 }

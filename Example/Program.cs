@@ -12,8 +12,7 @@ namespace Example
         static void Main()
         {
             //1. download trial kdb+ here http://kx.com/Developers/software.php
-            //2. start q process on 1001 port by running  'q -p 1001'
-
+            // there should be path to q process in the path env variable
             KdbPlusProcess process = KdbPlusProcess.Builder.StartNew();
 
             try
@@ -72,7 +71,7 @@ namespace Example
         {
             try
             {
-                using (DbConnection connection = new KdbPlusConnection("server=localhost;port=1001;user id=me;password=my;buffersize=16384"))
+                using (DbConnection connection = new KdbPlusConnection("server=localhost;port=1001;user id=me;password=my;buffer size=16384"))
                 {
                     // open connection - connection pooling is enabled
                     // to disable pooling - use Pooling=false in connection string.

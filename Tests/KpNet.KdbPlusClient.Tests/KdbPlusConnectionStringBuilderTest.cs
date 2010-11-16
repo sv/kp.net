@@ -9,7 +9,7 @@ namespace KpNet.KdbPlusClient.Tests
         [Test]
         public void CorrectStringParseTest()
         {
-            KdbPlusConnectionStringBuilder builder = new KdbPlusConnectionStringBuilder("server=1;port=2;user id=3;password=4;buffersize=16384;pooling=false;min pool size=10;max pool size=11;load balance timeout=10");
+            KdbPlusConnectionStringBuilder builder = new KdbPlusConnectionStringBuilder("server=1;port=2;user id=3;password=4;buffer size=16384;pooling=false;min pool size=10;max pool size=11;load balance timeout=10;inactivity timeout=10");
             Assert.AreEqual("1", builder.Server);
             Assert.AreEqual(2, builder.Port);
             Assert.AreEqual("3", builder.UserID);
@@ -19,6 +19,7 @@ namespace KpNet.KdbPlusClient.Tests
             Assert.AreEqual(10, builder.MinPoolSize);
             Assert.AreEqual(11, builder.MaxPoolSize);
             Assert.AreEqual(10, builder.LoadBalanceTimeout);
+            Assert.AreEqual(10, builder.InactivityTimeout);
         }
 
         [Test]

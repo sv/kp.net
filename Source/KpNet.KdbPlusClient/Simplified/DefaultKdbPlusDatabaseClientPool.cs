@@ -19,7 +19,8 @@ namespace KpNet.KdbPlusClient
         private List<KdbPlusDatabaseClient> _createdConnections;
         private int _connectionsCount;
         private bool _isDisposed;
-
+        private TimeSpan _connectionCleaningInterval;
+        private Timer _cleaningTimer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultKdbPlusDatabaseClientPool"/> class.
@@ -28,7 +29,6 @@ namespace KpNet.KdbPlusClient
         public DefaultKdbPlusDatabaseClientPool(string connectionString) :this(new KdbPlusConnectionStringBuilder(connectionString))
         {
         }
-
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultKdbPlusDatabaseClientPool"/> class.
@@ -61,11 +61,8 @@ namespace KpNet.KdbPlusClient
             AppDomain.CurrentDomain.DomainUnload += CurrentDomainUnload;
 
             InitializeConnectionPool();
-        }
 
-        void CurrentDomainUnload(object sender, EventArgs e)
-        {
-            Dispose();
+            InitializeConnectionCleaning();
         }
 
         /// <summary>
@@ -128,7 +125,9 @@ namespace KpNet.KdbPlusClient
 
             lock (_locker)
             {
-                _connectionPool.Add(connection);
+                if (ConnectionShouldBeDisposed(connection))
+                    DisposeConnection(connection);
+                else _connectionPool.Add(connection);
 
                 Monitor.Pulse(_locker);
             }
@@ -144,6 +143,9 @@ namespace KpNet.KdbPlusClient
                     {
                         connection.Dispose();
                     }
+
+                    if (_cleaningTimer != null)
+                        _cleaningTimer.Dispose();
 
                     _isDisposed = true;
                 }
@@ -176,6 +178,41 @@ namespace KpNet.KdbPlusClient
         }
 
         #region Private Members
+
+        private void InitializeConnectionCleaning()
+        {
+            int lazyTimeoutSeconds = _builder.InactivityTimeout;
+
+            if (lazyTimeoutSeconds > 0)
+            {
+                TimeSpan connectionCleaningInterval = TimeSpan.FromSeconds(_builder.InactivityTimeout);
+                _connectionCleaningInterval = connectionCleaningInterval;
+                _cleaningTimer = new Timer(CleanNotUsedConnections, null, TimeSpan.Zero, _connectionCleaningInterval);
+            }
+        }
+
+
+        private void CurrentDomainUnload(object sender, EventArgs e)
+        {
+            Dispose();
+        }
+
+        private void CleanNotUsedConnections(object state)
+        {
+            lock(_locker)
+            {
+                if (_createdConnections.Count == 0)
+                    return;
+
+                DateTime now = DateTime.Now;
+
+                foreach (NonPooledKdbPlusDatabaseClient connection in _createdConnections)
+                {
+                    if(now - connection.LastUsed > _connectionCleaningInterval)
+                        DisposeConnection(connection);
+                }
+            }
+        }
 
         private void DisposeConnection(KdbPlusDatabaseClient connection)
         {

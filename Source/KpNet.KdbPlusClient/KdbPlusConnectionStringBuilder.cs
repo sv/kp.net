@@ -14,17 +14,19 @@ namespace KpNet.KdbPlusClient
         private const string PortKey = "Port";
         private const string UserKey = "User Id";
         private const string PasswordKey = "Password";
-        private const string BufferSizeKey = "BufferSize";
+        private const string BufferSizeKey = "Buffer Size";
         private const string PoolingKey = "Pooling";
         private const string MinPoolSizeKey = "Min Pool Size";
         private const string MaxPoolSizeKey = "Max Pool Size";
         private const string LoadBalanceTimeoutKey = "Load Balance Timeout";
+        private const string InactivityTimeoutKey = "Inactivity Timeout";
 
 
         public const int DefaultBufferSize = 16384;
         public const int DefaultMinPoolSize = 0;
         public const int DefaultMaxPoolSize = 100;
         public const int DefaultLoadBalanceTimeoutSeconds = 0;
+        public const int DefaultInactivityTimeoutSeconds = 0;
         public const bool DefaultPooling = true;
 
 
@@ -37,6 +39,7 @@ namespace KpNet.KdbPlusClient
         private int _minPoolSize;
         private int _maxPoolSize;
         private int _loadBalanceTimeout;
+        private int _inactivityTimeout;
         private int _hashCode;
 
 
@@ -226,6 +229,24 @@ namespace KpNet.KdbPlusClient
             }
         }
 
+
+        /// <summary>
+        /// Gets or sets the connection lazy timeout.
+        /// </summary>
+        /// <value>The connection lazy timeout.</value>
+        public int InactivityTimeout
+        {
+            get
+            {
+                return _inactivityTimeout;
+            }
+            set
+            {
+                SetValue(InactivityTimeoutKey, value.ToString());
+                _inactivityTimeout = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the size of the max pool.
         /// </summary>
@@ -253,6 +274,7 @@ namespace KpNet.KdbPlusClient
             _pooling = GetValueOrDefault(PoolingKey, DefaultPooling);
             _minPoolSize = GetValueOrDefault(MinPoolSizeKey, DefaultMinPoolSize);
             _loadBalanceTimeout = GetValueOrDefault(LoadBalanceTimeoutKey, DefaultLoadBalanceTimeoutSeconds);
+            _inactivityTimeout = GetValueOrDefault(InactivityTimeoutKey, DefaultInactivityTimeoutSeconds);
             _maxPoolSize = GetValueOrDefault(MaxPoolSizeKey, DefaultMaxPoolSize);
             _hashCode = ConnectionString.ToLowerInvariant().GetHashCode();
         }
