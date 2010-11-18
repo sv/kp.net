@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using KpNet.Common;
 using KpNet.KdbPlusClient;
 
@@ -11,6 +12,7 @@ namespace KpNet.Hosting
     internal sealed class CompositeKdbPlusProcess : KdbPlusProcess
     {
         private readonly IEnumerable<KdbPlusProcess> _processes;
+        private readonly object _locker = new object();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CompositeKdbPlusProcess"/> class.
@@ -30,15 +32,18 @@ namespace KpNet.Hosting
         {
             List<IDatabaseClient> connections = new List<IDatabaseClient>();
 
-            foreach (KdbPlusProcess process in _processes)
+            Parallel.ForEach(_processes, (process) => 
             {
                 IDatabaseClient dbClient;
 
-                if(process.Restart(out dbClient))
+                if (process.Restart(out dbClient))
                 {
-                    connections.Add(dbClient);
+                    lock (_locker)
+                    {
+                        connections.Add(dbClient);
+                    }
                 }
-            }
+            });
 
             if(connections.Count > 0)
             {
@@ -59,10 +64,7 @@ namespace KpNet.Hosting
         {
             try
             {
-                foreach (KdbPlusProcess process in _processes)
-                {
-                    process.Start();
-                }
+                Parallel.ForEach(_processes, process => process.Start());
             }
             catch (Exception)
             {
