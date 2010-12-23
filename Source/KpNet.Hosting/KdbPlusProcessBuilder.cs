@@ -28,6 +28,7 @@ namespace KpNet.Hosting
         private bool _processCreated;
         private bool _syncLoggingEnabled;
         private bool _multiThreadingEnabled;
+        private bool _hideWindow;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KdbPlusProcessBuilder"/> class.
@@ -61,6 +62,8 @@ namespace KpNet.Hosting
             _syncLoggingEnabled = false;
 
             _multiThreadingEnabled = false;
+
+            _hideWindow = false;
         }
 
         /// <summary>
@@ -79,6 +82,17 @@ namespace KpNet.Hosting
         public KdbPlusProcessBuilder DisableSyncKdbLogging()
         {
             return SetSyncLogging(false);
+        }
+
+        /// <summary>
+        /// Hides the window.
+        /// </summary>
+        /// <returns></returns>
+        public KdbPlusProcessBuilder HideWindow()
+        {
+            _hideWindow = true;
+
+            return this;
         }
 
         /// <summary>
@@ -328,7 +342,7 @@ namespace KpNet.Hosting
 
             SingleKdbPlusProcess process = new SingleKdbPlusProcess(_processName, _host, Port, GetCommandLine(Port),
                                             _processTitle, _workingDirectory, _logger,
-                                            _settingsStorage, _preStartCommands, _setupCommands);
+                                            _settingsStorage, _preStartCommands, _setupCommands, _hideWindow);
 
             process.Start();
 
@@ -349,7 +363,7 @@ namespace KpNet.Hosting
                 int port = Port + i;
                 processes.Add(new SingleKdbPlusProcess(_processName, _host, port, GetCommandLine(port),
                                             string.Format("{0}_{1}", _processTitle, port), _workingDirectory, _logger,
-                                            _settingsStorage, _preStartCommands, _setupCommands));
+                                            _settingsStorage, _preStartCommands, _setupCommands, _hideWindow));
             }
 
             CompositeKdbPlusProcess result = new CompositeKdbPlusProcess(processes);

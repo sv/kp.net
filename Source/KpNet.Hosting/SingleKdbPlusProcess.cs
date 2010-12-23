@@ -29,7 +29,7 @@ namespace KpNet.Hosting
         private readonly object _locker = new object();
         private int _id;
         private string _processKey;
-
+        private bool _hideWindow;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SingleKdbPlusProcess"/> class.
@@ -44,12 +44,13 @@ namespace KpNet.Hosting
         /// <param name="storage">The storage.</param>
         /// <param name="preStartCommands">The pre-start commands.</param>
         /// <param name="setupCommands">The setup commands.</param>
+        /// <param name="hideWindow">if set to <c>true</c> [hide window].</param>
         public SingleKdbPlusProcess(string processName, string host, 
                                     int port, string commandLine, string processTitle,
                                     string workingDirectory, ILogger logger, 
                                     ISettingsStorage storage,
                                     List<Action> preStartCommands,
-                                    List<Action<IDatabaseClient>> setupCommands)
+                                    List<Action<IDatabaseClient>> setupCommands, bool hideWindow)
         {
             Guard.ThrowIfNull(logger, "logger");
             Guard.ThrowIfNull(storage, "storage");
@@ -80,6 +81,8 @@ namespace KpNet.Hosting
 
             _setupCommands = setupCommands;
             _preStartCommands = preStartCommands;
+
+            _hideWindow = hideWindow;
         }
 
         /// <summary>
@@ -229,7 +232,7 @@ namespace KpNet.Hosting
 
         private int StartNewProcess(string commandArgs)
         {
-            return ProcessHelper.StartNewProcess(_processName, _workingDirectory, commandArgs, _processTitle);
+            return ProcessHelper.StartNewProcess(_processName, _workingDirectory, commandArgs, _processTitle, _hideWindow);
         }
 
         private void CheckIfProcessIsRepsponding()

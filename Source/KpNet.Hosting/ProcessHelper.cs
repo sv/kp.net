@@ -25,7 +25,7 @@ namespace KpNet.Hosting
         /// <param name="commandLine">The command line.</param>
         /// <param name="title">The title.</param>
         /// <returns>The id of the created process.</returns>
-        public static int StartNewProcess(string processName, string workerDirectory, string commandLine, string title)
+        public static int StartNewProcess(string processName, string workerDirectory, string commandLine, string title, bool hideWindow)
         {
             Process kdbProc = new Process
             {
@@ -33,12 +33,17 @@ namespace KpNet.Hosting
                 {
                     FileName = processName,
                     WorkingDirectory = Path.GetFullPath(workerDirectory),
-                    Arguments = commandLine
+                    Arguments = commandLine,                    
                 }
             };
 
             try
             {
+                if (hideWindow)
+                {
+                    kdbProc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                }
+
                 kdbProc.Start();
             }
             catch (ProcessException)
