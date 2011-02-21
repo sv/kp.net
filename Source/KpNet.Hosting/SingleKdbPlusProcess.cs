@@ -153,7 +153,7 @@ namespace KpNet.Hosting
 
                     _process.Exited += ProcessExited;
 
-                    _isAlive = true;
+                    _isAlive = !_process.HasExited;
 
                     _id = _process.Id;
 
