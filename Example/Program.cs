@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using System.Threading;
 using KpNet.Hosting;
 using KpNet.KdbPlusClient;
 
@@ -13,7 +14,7 @@ namespace Example
         {
             //1. download trial kdb+ here http://kx.com/Developers/software.php
             // there should be path to q process in the path env variable
-            KdbPlusProcess process = KdbPlusProcess.Builder.StartNew();
+            KdbPlusProcess process = KdbPlusProcess.Builder.StartNew();            
 
             try
             {
@@ -30,8 +31,7 @@ namespace Example
             {
                 if(process.IsAlive)
                     process.Kill();
-            }    
-            
+            }
         }
 
         private static void RunSimplifiedConnectionPoolingExample()

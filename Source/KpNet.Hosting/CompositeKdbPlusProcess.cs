@@ -75,6 +75,23 @@ namespace KpNet.Hosting
         }
 
         /// <summary>
+        /// Opens the existing.
+        /// </summary>
+        public override void OpenExisting()
+        {
+            try
+            {
+                Parallel.ForEach(_processes, process => process.OpenExisting());
+            }
+            catch (Exception)
+            {
+                Kill();
+
+                throw;
+            }
+        }
+
+        /// <summary>
         /// Kills this instance.
         /// </summary>
         public override void Kill()

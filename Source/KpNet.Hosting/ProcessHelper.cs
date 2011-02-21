@@ -12,7 +12,7 @@ namespace KpNet.Hosting
     /// </summary>
     internal static class ProcessHelper
     {
-        private const int OneMinute = 60 * 1000;
+        public const int OneMinute = 60 * 1000;
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         internal static extern void SetWindowText(IntPtr hWnd, string lpString);
@@ -112,6 +112,53 @@ namespace KpNet.Hosting
             if (exceptions.Count > 0)
                 throw new AggregateException(String.Format(Constants.DefaultCulture, "Kdb+ processes with Ids {0} couldn't be stopped.", FormatterHelper.FormatNumbers(notKilledIds)), exceptions);
 
-        }        
+        }
+
+        public static bool IsStarted(int id, string processName)
+        {
+            Process[] processes;
+            try
+            {
+                processes = Process.GetProcessesByName(processName);
+            }
+            catch (Exception ex)
+            {
+                throw new ProcessException("Could not get information about running Kdb+ processes.", ex);
+            }
+
+            foreach (Process process in processes)
+            {
+                if(process.Id == id)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static Process OpenExisting(int id, string processName)
+        {
+            Process[] processes;
+            try
+            {
+                processes = Process.GetProcessesByName(processName);
+            }
+            catch (Exception ex)
+            {
+                throw new ProcessException("Could not get information about running Kdb+ processes.", ex);
+            }
+
+            foreach (Process process in processes)
+            {
+                if (process.Id == id)
+                {
+                    process.EnableRaisingEvents = true;
+                    return process;
+                }
+            }
+
+            throw new ProcessException(string.Format("Could not find existing Kdb+ process. Name: {0}. Id: {1}.", processName, id));
+        }
     }
 }

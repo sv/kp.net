@@ -26,6 +26,11 @@ namespace KpNet.Hosting
         public abstract void Start();
 
         /// <summary>
+        /// Opens the existing.
+        /// </summary>
+        public abstract void OpenExisting();
+
+        /// <summary>
         /// Kills this instance.
         /// </summary>
         public abstract void Kill();

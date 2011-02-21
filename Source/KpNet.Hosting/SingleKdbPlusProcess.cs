@@ -33,6 +33,7 @@ namespace KpNet.Hosting
         private readonly bool _hideWindow;
 
         private volatile bool _isAlive;
+        private Process _process;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SingleKdbPlusProcess"/> class.
@@ -97,7 +98,7 @@ namespace KpNet.Hosting
 
             lock(_locker)
             {
-                if (!IsAlive)
+                if (!IsStarted())
                 {
                     Start();
 
@@ -110,6 +111,32 @@ namespace KpNet.Hosting
             return false;
         }
 
+        /// <summary>
+        /// Opens the existing.
+        /// </summary>
+        public override void OpenExisting()
+        {
+            lock(_locker)
+            {
+                try
+                {
+                    _process = OpenExistingProcess();
+
+                    _process.Exited += ProcessExited;
+
+                    _isAlive = true;
+
+                    _id = _process.Id;
+                }
+                catch (Exception exc)
+                {
+                    _logger.Error("Failed to open existing db process.", exc);
+
+                    throw;
+                }                
+            }
+        }
+
 
         /// <summary>
         /// Starts this instance.
@@ -120,15 +147,15 @@ namespace KpNet.Hosting
             {
                 try
                 {
-                    KillProcess(_id);
+                    KillProcessById(_id);
 
-                    Process process = StartProcess();
+                    _process = StartProcess();
 
-                    process.Exited += ProcessExited;
+                    _process.Exited += ProcessExited;
 
                     _isAlive = true;
 
-                    _id = process.Id;
+                    _id = _process.Id;
 
                     _storage.SetProcessId(_processKey, _id);
                 }
@@ -153,7 +180,11 @@ namespace KpNet.Hosting
         {
             lock (_locker)
             {
-                KillProcess(_id);
+                if(_process != null)
+                {
+                    _process.Kill();
+                    _process.WaitForExit(ProcessHelper.OneMinute);
+                }
             }
         }
 
@@ -188,7 +219,7 @@ namespace KpNet.Hosting
             client.ReceiveTimeout = TimeSpan.FromMinutes(15);
 
             return client;
-        }        
+        }                
 
         private Process StartProcess()
         {
@@ -210,7 +241,8 @@ namespace KpNet.Hosting
             {
                 if (process != null)
                 {
-                    KillProcess(process.Id);
+                    process.Kill();
+                    process.WaitForExit(ProcessHelper.OneMinute);
                 }
 
                 throw;
@@ -249,6 +281,24 @@ namespace KpNet.Hosting
             return ProcessHelper.StartNewProcess(_processName, _workingDirectory, commandArgs, _processTitle, _hideWindow);
         }
 
+        private Process OpenExistingProcess()
+        {
+            return ProcessHelper.OpenExisting(_id, _processName);
+        }
+
+        private bool IsStarted()
+        {
+            if(ProcessHelper.IsStarted(_id, _processName))
+            {
+                if(IsProcessResponding())
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private void CheckIfProcessIsRepsponding()
         {
             if (!IsProcessResponding())
@@ -285,7 +335,7 @@ namespace KpNet.Hosting
             }
         }
 
-        private void KillProcess(int id)
+        private void KillProcessById(int id)
         {
             try
             {

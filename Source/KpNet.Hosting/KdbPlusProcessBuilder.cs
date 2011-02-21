@@ -349,6 +349,19 @@ namespace KpNet.Hosting
             return process;
         }
 
+        public KdbPlusProcess OpenExisting()
+        {
+            _processCreated = true;
+
+            SingleKdbPlusProcess process = new SingleKdbPlusProcess(_processName, _host, Port, GetCommandLine(Port),
+                                            _processTitle, _workingDirectory, _logger,
+                                            _settingsStorage, _preStartCommands, _setupCommands, _hideWindow);
+
+            process.OpenExisting();
+
+            return process;
+        }
+
         /// <summary>
         /// Starts new composite Kdb process.
         /// </summary>
