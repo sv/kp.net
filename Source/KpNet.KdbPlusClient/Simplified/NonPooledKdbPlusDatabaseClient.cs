@@ -20,8 +20,6 @@ namespace KpNet.KdbPlusClient
         private static readonly Type _dictType = typeof (c.Dict);
         private static readonly Type _flipType = typeof(c.Flip);
         private c _client;
-        private TimeSpan _receiveTimeout = TimeSpan.FromMinutes(1);
-        private TimeSpan _sendTimeout = TimeSpan.FromMinutes(1);
         private DateTime _created;
         private DateTime _lastUsed;
         private readonly KdbPlusConnectionStringBuilder _builder;
@@ -75,7 +73,7 @@ namespace KpNet.KdbPlusClient
 
             _builder = builder;
 
-            Initialize(builder.Server, builder.Port, builder.UserID, builder.Password, builder.BufferSize);
+            Initialize(builder.Server, builder.Port, builder.UserID, builder.Password, builder.BufferSize, builder.SendTimeout, builder.ReceiveTimeout);
         }
 
         /// <summary>
@@ -84,7 +82,7 @@ namespace KpNet.KdbPlusClient
         /// <param name="server">The server.</param>
         /// <param name="port">The port.</param>
         public NonPooledKdbPlusDatabaseClient(string server, int port)
-            : this(server, port, null, null, KdbPlusConnectionStringBuilder.DefaultBufferSize)
+            : this(server, port, null, null, KdbPlusConnectionStringBuilder.DefaultBufferSize, KdbPlusConnectionStringBuilder.DefaultSendTimeout, KdbPlusConnectionStringBuilder.DefaultReceiveTimeout)
         {
         }
 
@@ -96,9 +94,11 @@ namespace KpNet.KdbPlusClient
         /// <param name="userId">The user name.</param>
         /// <param name="password">The password.</param>
         /// <param name="bufferSize">The buffer size.</param>
-        public NonPooledKdbPlusDatabaseClient(string server, int port, string userId, string password, int bufferSize)
+        /// <param name="sendTimeout">The send timeout</param>
+        /// <param name="receiveTimeout">The receive timeout</param>
+        public NonPooledKdbPlusDatabaseClient(string server, int port, string userId, string password, int bufferSize, TimeSpan sendTimeout, TimeSpan receiveTimeout)
         {
-            Initialize(server, port, userId, password, bufferSize);
+            Initialize(server, port, userId, password, bufferSize, sendTimeout, receiveTimeout);
         }
 
         #region IDatabaseClient Members
@@ -204,12 +204,11 @@ namespace KpNet.KdbPlusClient
         /// <value>The send timeout.</value>
         public override TimeSpan SendTimeout
         {
-            get { return _sendTimeout; }
+            get { return _builder.SendTimeout; }
             set
             {
                 CheckInnerState();
                 _client.SendTimeout = ToMilliSeconds(value);
-                _sendTimeout = value;
             }
         }
 
@@ -219,12 +218,11 @@ namespace KpNet.KdbPlusClient
         /// <value>The receive timeout.</value>
         public override TimeSpan ReceiveTimeout
         {
-            get { return _receiveTimeout; }
+            get { return _builder.ReceiveTimeout; }
             set
             {
                 CheckInnerState();
                 _client.ReceiveTimeout = ToMilliSeconds(value);
-                _receiveTimeout = value;
             }
         }
 
@@ -396,7 +394,7 @@ namespace KpNet.KdbPlusClient
             get { return _lastUsed; }
         }
 
-        private void Initialize(string server, int port, string userId, string password, int bufferSize)
+        private void Initialize(string server, int port, string userId, string password, int bufferSize, TimeSpan sendTimeout, TimeSpan receiveTimeout)
         {
             Guard.ThrowIfNullOrEmpty(server, "server");
 
@@ -407,8 +405,8 @@ namespace KpNet.KdbPlusClient
             {
                 _client = new c(server, port, FormatUserName(userId, password), bufferSize)
                 {
-                    SendTimeout = ToMilliSeconds(_sendTimeout),
-                    ReceiveTimeout = ToMilliSeconds(_receiveTimeout)
+                    SendTimeout = ToMilliSeconds(sendTimeout),
+                    ReceiveTimeout = ToMilliSeconds(receiveTimeout)
                 };
                 _created = DateTime.Now;
                 RefreshLastUsed();

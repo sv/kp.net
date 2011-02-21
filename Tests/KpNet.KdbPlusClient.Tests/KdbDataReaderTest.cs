@@ -17,7 +17,7 @@ namespace KpNet.KdbPlusClient.Tests
         }
 
         [Test]
-        [ExpectedException(typeof (ObjectDisposedException))]
+        [ExpectedException(typeof (IndexOutOfRangeException))]
         public void CannotReadAfterDisposeTest()
         {
             KdbPlusDataReader reader = GetReader();
@@ -27,7 +27,7 @@ namespace KpNet.KdbPlusClient.Tests
         }
 
         [Test]
-        [ExpectedException(typeof (ObjectDisposedException))]
+        [ExpectedException(typeof(IndexOutOfRangeException))]
         public void CannotReadAfterEndTest()
         {
             KdbPlusDataReader reader = GetReader();

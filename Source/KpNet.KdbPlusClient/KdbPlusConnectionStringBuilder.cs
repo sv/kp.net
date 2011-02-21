@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data.Common;
-using System.Globalization;
 using KpNet.Common;
 
 namespace KpNet.KdbPlusClient
@@ -20,7 +19,8 @@ namespace KpNet.KdbPlusClient
         private const string MaxPoolSizeKey = "Max Pool Size";
         private const string LoadBalanceTimeoutKey = "Load Balance Timeout";
         private const string InactivityTimeoutKey = "Inactivity Timeout";
-
+        private const string ReceiveTimeoutKey = "Receive Timeout";
+        private const string SendTimeoutKey = "Send Timeout";
 
         public const int DefaultBufferSize = 16384;
         public const int DefaultMinPoolSize = 0;
@@ -28,6 +28,8 @@ namespace KpNet.KdbPlusClient
         public const int DefaultLoadBalanceTimeoutSeconds = 0;
         public const int DefaultInactivityTimeoutSeconds = 0;
         public const bool DefaultPooling = true;
+        public static readonly TimeSpan DefaultSendTimeout = TimeSpan.FromSeconds(30);
+        public static readonly TimeSpan DefaultReceiveTimeout = TimeSpan.FromMinutes(5);
 
 
         private string _server;
@@ -41,7 +43,8 @@ namespace KpNet.KdbPlusClient
         private int _loadBalanceTimeout;
         private int _inactivityTimeout;
         private int _hashCode;
-
+        private TimeSpan _receiveTimeout;
+        private TimeSpan _sendTimeout;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KdbPlusConnectionStringBuilder"/> class.
@@ -264,6 +267,27 @@ namespace KpNet.KdbPlusClient
             }
         }
 
+        public TimeSpan ReceiveTimeout
+        {
+            get { return _receiveTimeout; }
+            set
+            {
+                SetValue(ReceiveTimeoutKey, (Convert.ToInt32(value.TotalSeconds)).ToString());
+                _receiveTimeout = value;
+            }
+        }
+
+        public TimeSpan SendTimeout
+        {
+            get { return _sendTimeout; }
+            set
+            {
+                SetValue(SendTimeoutKey, (Convert.ToInt32(value.TotalSeconds)).ToString());
+                _sendTimeout = value;
+            }
+        }
+
+
         private void Init()
         {
             _server = GetValueOrDefault(ServerKey, String.Empty);
@@ -276,7 +300,11 @@ namespace KpNet.KdbPlusClient
             _loadBalanceTimeout = GetValueOrDefault(LoadBalanceTimeoutKey, DefaultLoadBalanceTimeoutSeconds);
             _inactivityTimeout = GetValueOrDefault(InactivityTimeoutKey, DefaultInactivityTimeoutSeconds);
             _maxPoolSize = GetValueOrDefault(MaxPoolSizeKey, DefaultMaxPoolSize);
+            _receiveTimeout = GetValueOrDefault(ReceiveTimeoutKey, DefaultReceiveTimeout);
+            _sendTimeout = GetValueOrDefault(SendTimeoutKey, DefaultSendTimeout);
+
             _hashCode = ConnectionString.ToLowerInvariant().GetHashCode();
+            
         }
 
         private int GetValueOrDefault(string key, int defaultValue)
@@ -286,6 +314,15 @@ namespace KpNet.KdbPlusClient
                 return defaultValue;
 
             return Int32.Parse((string)result);
+        }
+
+        private TimeSpan GetValueOrDefault(string key, TimeSpan defaultValue)
+        {
+            object result;
+            if (!TryGetValue(key, out result))
+                return defaultValue;
+
+            return TimeSpan.FromSeconds(Int32.Parse((string)result));
         }
 
         private bool GetValueOrDefault(string key, bool defaultValue)
@@ -306,25 +343,6 @@ namespace KpNet.KdbPlusClient
             return (string)result;
         }
 
-        private string GetStringValue(string key)
-        {
-            return (string) GetValue(key);
-        }
-
-        private int GetIntValue(string key)
-        {
-            return Int32.Parse(GetStringValue(key));
-        }
-
-        private object GetValue(string key)
-        {
-            object result;
-            if (!TryGetValue(key, out result))
-                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
-                                                                  "Connection string does not contain key '{0}'.", key));
-
-            return result;
-        }
         
         private void SetValue(string key, string value)
         {
