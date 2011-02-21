@@ -180,11 +180,7 @@ namespace KpNet.Hosting
         {
             lock (_locker)
             {
-                if(_process != null)
-                {
-                    _process.Kill();
-                    _process.WaitForExit(ProcessHelper.OneMinute);
-                }
+                KillProcess(_process);
             }
         }
 
@@ -206,11 +202,7 @@ namespace KpNet.Hosting
         /// <returns>Connection.</returns>
         public override IDatabaseClient GetConnection()
         {
-            KdbPlusConnectionStringBuilder builder = new KdbPlusConnectionStringBuilder();
-
-            builder.Port = _port;
-
-            builder.Server = _host;
+            KdbPlusConnectionStringBuilder builder = new KdbPlusConnectionStringBuilder {Port = _port, Server = _host};
 
             KdbPlusDatabaseClient client = KdbPlusDatabaseClient.Factory.CreateNonPooledClient(builder);
 
@@ -239,11 +231,7 @@ namespace KpNet.Hosting
             }
             catch (Exception)
             {
-                if (process != null)
-                {
-                    process.Kill();
-                    process.WaitForExit(ProcessHelper.OneMinute);
-                }
+                KillProcess(process);
 
                 throw;
             }
@@ -341,7 +329,7 @@ namespace KpNet.Hosting
             {
                 _logger.InfoFormat("Killing process {0}.", id);
 
-                ProcessHelper.KillProcesses(new int[]{ id }, _processName);
+                ProcessHelper.KillProcesses(new[]{ id }, _processName);
 
                 _logger.InfoFormat("Successfully killed process {0}.", id);
             }
@@ -404,6 +392,22 @@ namespace KpNet.Hosting
 
                 client.ExecuteScalar(command);
             }            
+        }
+
+        private static void KillProcess(Process process)
+        {
+            if (process != null)
+            {
+                try
+                {
+                    process.Kill();
+                    process.WaitForExit(ProcessHelper.OneMinute);
+                }
+                catch (InvalidOperationException)
+                {
+                    // ignore exception if process was already killed
+                }
+            }
         }
     }
 }
