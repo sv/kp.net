@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using KpNet.Common;
 using KpNet.KdbPlusClient;
@@ -29,7 +30,9 @@ namespace KpNet.Hosting
         private readonly object _locker = new object();
         private int _id;
         private string _processKey;
-        private bool _hideWindow;
+        private readonly bool _hideWindow;
+
+        private volatile bool _isAlive;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SingleKdbPlusProcess"/> class.
@@ -119,7 +122,13 @@ namespace KpNet.Hosting
                 {
                     KillProcess(_id);
 
-                    _id = StartProcess();
+                    Process process = StartProcess();
+
+                    process.Exited += ProcessExited;
+
+                    _isAlive = true;
+
+                    _id = process.Id;
 
                     _storage.SetProcessId(_processKey, _id);
                 }
@@ -130,6 +139,11 @@ namespace KpNet.Hosting
                     throw;
                 }
             }
+        }
+
+        private void ProcessExited(object sender, EventArgs e)
+        {
+            _isAlive = false;
         }
 
         /// <summary>
@@ -151,7 +165,7 @@ namespace KpNet.Hosting
         {
             get
             {
-                return IsProcessResponding();
+                return _isAlive;
             }
         }
 
@@ -176,9 +190,9 @@ namespace KpNet.Hosting
             return client;
         }        
 
-        private int StartProcess()
+        private Process StartProcess()
         {
-            int processId = -1;
+            Process process = null;
 
             try
             {
@@ -186,7 +200,7 @@ namespace KpNet.Hosting
 
                 ExecutePrestartCommands();
 
-                processId = StartNewProcess(_commandLine);
+                process = StartNewProcess(_commandLine);
 
                 CheckIfProcessIsRepsponding();
 
@@ -194,15 +208,15 @@ namespace KpNet.Hosting
             }
             catch (Exception)
             {
-                if (processId != -1)
+                if (process != null)
                 {
-                    KillProcess(processId);
+                    KillProcess(process.Id);
                 }
 
                 throw;
             }
 
-            return processId;
+            return process;
         }
 
         private void ExecutePrestartCommands()
@@ -230,7 +244,7 @@ namespace KpNet.Hosting
             }
         }
 
-        private int StartNewProcess(string commandArgs)
+        private Process StartNewProcess(string commandArgs)
         {
             return ProcessHelper.StartNewProcess(_processName, _workingDirectory, commandArgs, _processTitle, _hideWindow);
         }
