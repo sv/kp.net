@@ -161,6 +161,19 @@ namespace KpNet.KdbPlusClient
             get { return _builder; }
         }
 
+        public override bool IsBusy
+        {
+            get
+            {
+                ThrowIfDisposed();
+
+                lock (_locker)
+                {
+                    return _connectionPool.Count == 0;
+                }
+            }
+        }
+
         /// <summary>
         /// Clears this connection pool.
         /// </summary>

@@ -44,5 +44,14 @@ namespace KpNet.KdbPlusClient
         /// </summary>
         /// <value>The connection information.</value>
         public abstract KdbPlusConnectionStringBuilder ConnectionInformation { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this pool is out of connections.
+        /// </summary>
+        /// <value><c>true</c> if this instance is busy; otherwise, <c>false</c>.</value>
+        public abstract bool IsBusy
+        {
+            get;
+        }
     }
 }

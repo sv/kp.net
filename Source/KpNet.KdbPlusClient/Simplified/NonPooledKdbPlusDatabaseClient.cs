@@ -188,6 +188,12 @@ namespace KpNet.KdbPlusClient
             
             using (task)
             {
+               Exception aggException = task.Exception;
+               if(aggException != null)
+               {
+                   throw aggException.GetBaseException();
+               }
+
                 return task.Result;
             }
         }
