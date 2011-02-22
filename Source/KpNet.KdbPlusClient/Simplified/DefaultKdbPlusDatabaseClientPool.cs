@@ -15,7 +15,7 @@ namespace KpNet.KdbPlusClient
         private readonly int _maxPoolSize;
         private readonly int _minPoolSize;
         private readonly int _loadBalanceTimeout;
-        private List<KdbPlusDatabaseClient> _connectionPool;
+        private Queue<KdbPlusDatabaseClient> _connectionPool;
         private List<KdbPlusDatabaseClient> _createdConnections;
         private int _connectionsCount;
         private bool _isDisposed;
@@ -127,7 +127,7 @@ namespace KpNet.KdbPlusClient
             {
                 if (ConnectionShouldBeDisposed(connection))
                     DisposeConnection(connection);
-                else _connectionPool.Add(connection);
+                else _connectionPool.Enqueue(connection);
 
                 Monitor.Pulse(_locker);
             }
@@ -251,7 +251,7 @@ namespace KpNet.KdbPlusClient
 
         private void InitializeConnectionPool()
         {
-            _connectionPool = new List<KdbPlusDatabaseClient>(_maxPoolSize);
+            _connectionPool = new Queue<KdbPlusDatabaseClient>(_maxPoolSize);
             _createdConnections = new List<KdbPlusDatabaseClient>(_maxPoolSize);
 
             for (int i = 0; i < _minPoolSize; i++)
@@ -270,9 +270,8 @@ namespace KpNet.KdbPlusClient
 
         private KdbPlusDatabaseClient GetFreeConnection()
         {
-            KdbPlusDatabaseClient connection = _connectionPool[0];
-            _connectionPool.RemoveAt(0);
-
+            KdbPlusDatabaseClient connection = _connectionPool.Dequeue();
+            
             if (ConnectionShouldBeDisposed(connection))
             {
                 DisposeConnection(connection);
