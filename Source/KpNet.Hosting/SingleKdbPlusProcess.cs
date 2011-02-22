@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading;
 using KpNet.Common;
 using KpNet.KdbPlusClient;
 
@@ -15,6 +16,8 @@ namespace KpNet.Hosting
     {
         private const string TestConnectionCommand = @"0"; //ping q process - it should return 0 back
         private const string ErrorInQuery = "ERROR";
+
+        private readonly TimeSpan _idleTime = TimeSpan.FromMilliseconds(200);
 
         private readonly string _processName;
         private readonly string _host;
@@ -35,6 +38,8 @@ namespace KpNet.Hosting
         private volatile bool _isAlive;
         private Process _process;
 
+        private readonly TimeSpan _waitForPortTimeout;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SingleKdbPlusProcess"/> class.
         /// </summary>
@@ -49,12 +54,14 @@ namespace KpNet.Hosting
         /// <param name="preStartCommands">The pre-start commands.</param>
         /// <param name="setupCommands">The setup commands.</param>
         /// <param name="hideWindow">if set to <c>true</c> [hide window].</param>
+        /// <param name="waitForPortTimeOut">The wait for port time out.</param>
         public SingleKdbPlusProcess(string processName, string host, 
                                     int port, string commandLine, string processTitle,
                                     string workingDirectory, ILogger logger, 
                                     ISettingsStorage storage,
                                     List<Action> preStartCommands,
-                                    List<Action<IDatabaseClient>> setupCommands, bool hideWindow)
+                                    List<Action<IDatabaseClient>> setupCommands, bool hideWindow,
+                                    TimeSpan waitForPortTimeOut)
         {
             Guard.ThrowIfNull(logger, "logger");
             Guard.ThrowIfNull(storage, "storage");
@@ -87,6 +94,8 @@ namespace KpNet.Hosting
             _preStartCommands = preStartCommands;
 
             _hideWindow = hideWindow;
+
+            _waitForPortTimeout = waitForPortTimeOut;
         }
 
         /// <summary>
@@ -289,6 +298,30 @@ namespace KpNet.Hosting
 
         private void CheckIfProcessIsRepsponding()
         {
+            TimeSpan timeout = _waitForPortTimeout;
+
+            // Wait for port.
+            while (timeout != TimeSpan.Zero)
+            {
+                if (IsProcessResponding())
+                {
+                    return;
+                }
+
+                if (timeout > _idleTime)
+                {
+                    Thread.Sleep(_idleTime);
+
+                    timeout = timeout - _idleTime;
+                }
+                else
+                {
+                    Thread.Sleep(timeout);
+
+                    timeout = TimeSpan.Zero;
+                }
+            }
+
             if (!IsProcessResponding())
             {
                 throw new ProcessException(string.Format("{0}:{1} is not responding.", _host, _port));

@@ -29,6 +29,7 @@ namespace KpNet.Hosting
         private bool _syncLoggingEnabled;
         private bool _multiThreadingEnabled;
         private bool _hideWindow;
+        private TimeSpan _waitForPortTimeout;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KdbPlusProcessBuilder"/> class.
@@ -64,6 +65,8 @@ namespace KpNet.Hosting
             _multiThreadingEnabled = false;
 
             _hideWindow = false;
+
+            _waitForPortTimeout = TimeSpan.FromSeconds(30);
         }
 
         /// <summary>
@@ -126,6 +129,7 @@ namespace KpNet.Hosting
 
             return this;
         }
+
 
         /// <summary>
         /// Sets the port.
@@ -317,6 +321,25 @@ namespace KpNet.Hosting
         }
 
         /// <summary>
+        /// Sets the wait for port timeout.
+        /// </summary>
+        /// <param name="timeout">The timeout.</param>
+        /// <returns></returns>
+        public KdbPlusProcessBuilder SetWaitForPortTimeout(TimeSpan timeout)
+        {
+            ThrowExceptionfIfProcessCreated();
+
+            if(timeout < TimeSpan.Zero)
+            {
+                throw new ArgumentException(string.Format("Incorrect timeout value: {0}", timeout));
+            }
+
+            _waitForPortTimeout = timeout;
+
+            return this;
+        }
+
+        /// <summary>
         /// Sets the KDB log.
         /// </summary>
         /// <param name="kdbLog">The KDB log.</param>
@@ -342,7 +365,7 @@ namespace KpNet.Hosting
 
             SingleKdbPlusProcess process = new SingleKdbPlusProcess(_processName, _host, Port, GetCommandLine(Port),
                                             _processTitle, _workingDirectory, _logger,
-                                            _settingsStorage, _preStartCommands, _setupCommands, _hideWindow);
+                                            _settingsStorage, _preStartCommands, _setupCommands, _hideWindow, _waitForPortTimeout);
 
             process.Start();
 
@@ -355,7 +378,7 @@ namespace KpNet.Hosting
 
             SingleKdbPlusProcess process = new SingleKdbPlusProcess(_processName, _host, Port, GetCommandLine(Port),
                                             _processTitle, _workingDirectory, _logger,
-                                            _settingsStorage, _preStartCommands, _setupCommands, _hideWindow);
+                                            _settingsStorage, _preStartCommands, _setupCommands, _hideWindow, _waitForPortTimeout);
 
             process.OpenExisting();
 
@@ -376,7 +399,7 @@ namespace KpNet.Hosting
                 int port = Port + i;
                 processes.Add(new SingleKdbPlusProcess(_processName, _host, port, GetCommandLine(port),
                                             string.Format("{0}_{1}", _processTitle, port), _workingDirectory, _logger,
-                                            _settingsStorage, _preStartCommands, _setupCommands, _hideWindow));
+                                            _settingsStorage, _preStartCommands, _setupCommands, _hideWindow, _waitForPortTimeout));
             }
 
             CompositeKdbPlusProcess result = new CompositeKdbPlusProcess(processes);
