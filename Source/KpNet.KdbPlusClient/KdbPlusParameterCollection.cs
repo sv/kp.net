@@ -194,7 +194,7 @@ namespace KpNet.KdbPlusClient
 
             foreach (KdbPlusParameter param in _parameters)
             {
-                if (String.Compare(param.ParameterName, parameterName, StringComparison.OrdinalIgnoreCase) == 0)
+                if (String.Equals(param.ParameterName, parameterName, StringComparison.OrdinalIgnoreCase))
                     return param;
             }
 
@@ -207,7 +207,7 @@ namespace KpNet.KdbPlusClient
 
             for (int i = 0; i < _parameters.Count; i++)
             {
-                if (String.Compare(_parameters[i].ParameterName, parameterName, StringComparison.OrdinalIgnoreCase) == 0)
+                if (String.Equals(_parameters[i].ParameterName, parameterName, StringComparison.OrdinalIgnoreCase))
                     return i;
             }
 

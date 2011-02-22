@@ -358,7 +358,7 @@ namespace KpNet.KdbPlusClient
             if (ReferenceEquals(this, other))
                 return true;
 
-            return (String.Compare(ConnectionString, other.ConnectionString, StringComparison.OrdinalIgnoreCase) == 0);
+            return (String.Equals(ConnectionString, other.ConnectionString, StringComparison.OrdinalIgnoreCase));
         }
 
         public override bool Equals(object obj)
