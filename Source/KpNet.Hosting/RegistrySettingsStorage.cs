@@ -1,4 +1,6 @@
-﻿using KpNet.Common;
+﻿using System;
+using System.Globalization;
+using KpNet.Common;
 using Microsoft.Win32;
 
 namespace KpNet.Hosting
@@ -32,7 +34,7 @@ namespace KpNet.Hosting
         {
             using (RegistryKey registryKey = GetRegistryKey())
             {
-                registryKey.SetValue(key, processId, RegistryValueKind.DWord);
+                registryKey.SetValue(key, processId.ToString(CultureInfo.InvariantCulture), RegistryValueKind.String);
             }
         }
 
@@ -45,7 +47,12 @@ namespace KpNet.Hosting
         {
             using (RegistryKey registryKey = GetRegistryKey())
             {
-                return (int)registryKey.GetValue(key, DefaultProcessId);
+                string value = (string)registryKey.GetValue(key, String.Empty);
+
+                if (string.IsNullOrEmpty(value))
+                    return DefaultProcessId;
+
+                return Int32.Parse(value, CultureInfo.InvariantCulture);
             }
         }
 
