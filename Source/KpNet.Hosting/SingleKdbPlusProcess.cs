@@ -16,7 +16,7 @@ namespace KpNet.Hosting
     {
         private const string TestConnectionCommand = @"0"; //ping q process - it should return 0 back
         private const string ErrorInQuery = "ERROR";
-
+        private const int NoProcessId = -1;
         private readonly TimeSpan _idleTime = TimeSpan.FromMilliseconds(200);
 
         private readonly string _processName;
@@ -177,11 +177,6 @@ namespace KpNet.Hosting
             }
         }
 
-        private void ProcessExited(object sender, EventArgs e)
-        {
-            _isAlive = false;
-        }
-
         /// <summary>
         /// Kills this instance.
         /// </summary>
@@ -222,6 +217,104 @@ namespace KpNet.Hosting
             return client;
         }                
 
+        
+
+        
+        /// <summary>
+        /// Sets the port.
+        /// </summary>
+        /// <param name="port">The port.</param>
+        public override void SetPort(int port)
+        {
+            using (IDatabaseClient client = GetConnection())
+            {
+                _port = port;
+
+                UpdateSettingsStorage();
+
+                string command = string.Format(@"\p {0}", port);
+
+                client.ExecuteScalar(command);
+            }
+        }
+
+        /// <summary>
+        /// Loads the directory.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        public override void LoadDirectory(string path)
+        {
+            Load(path);
+        }
+
+        /// <summary>
+        /// Loads the file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        public override void LoadFile(string path)
+        {
+            Load(path);
+        }
+
+        private void Load(string path)
+        {
+            using (IDatabaseClient client = GetConnection())
+            {
+                string command = string.Format(@"\l {0}", path);
+
+                client.ExecuteScalar(command);
+            }            
+        }
+
+        private void KillProcess(Process process)
+        {
+            if (process != null)
+            {
+                try
+                {
+                    process.Exited -= ProcessExited;
+                    process.Kill();
+                    process.WaitForExit(ProcessHelper.OneMinute);
+                    ProcessExited(this, EventArgs.Empty);
+                }
+                catch (InvalidOperationException)
+                {
+                    // ignore exception if process was already killed
+                }
+            }
+        }
+
+        private void ProcessExited(object sender, EventArgs e)
+        {
+            _isAlive = false;
+            _storage.SetProcessId(_processKey, NoProcessId);
+        }
+
+        private void UpdateSettingsStorage()
+        {
+            _storage.RemoveProcessId(_processKey);
+
+            _processKey = string.Format("{0}_{1}", _host, _port);
+
+            _storage.SetProcessId(_processKey, _id);
+        }
+
+        private void KillProcessById(int id)
+        {
+            try
+            {
+                _logger.InfoFormat("Killing process {0}.", id);
+
+                ProcessHelper.KillProcesses(new[] { id }, _processName);
+
+                _logger.InfoFormat("Successfully killed process {0}.", id);
+            }
+            catch (ProcessException exc)
+            {
+                _logger.ErrorFormat(exc, "Failed to kill process {0}.", id);
+            }
+        }
+
         private Process StartProcess()
         {
             Process process = null;
@@ -250,7 +343,7 @@ namespace KpNet.Hosting
 
         private void ExecutePrestartCommands()
         {
-            if(_preStartCommands.Count > 0)
+            if (_preStartCommands.Count > 0)
             {
                 foreach (Action command in _preStartCommands)
                 {
@@ -261,7 +354,7 @@ namespace KpNet.Hosting
 
         private void SetupProcess()
         {
-            if(_setupCommands.Count > 0)
+            if (_setupCommands.Count > 0)
             {
                 using (IDatabaseClient client = GetConnection())
                 {
@@ -285,9 +378,9 @@ namespace KpNet.Hosting
 
         private bool IsStarted()
         {
-            if(ProcessHelper.IsStarted(_id, _processName))
+            if (ProcessHelper.IsStarted(_id, _processName))
             {
-                if(IsProcessResponding())
+                if (IsProcessResponding())
                 {
                     return true;
                 }
@@ -333,7 +426,7 @@ namespace KpNet.Hosting
             try
             {
                 using (IDatabaseClient client = GetConnection())
-                {                    
+                {
                     CheckResult(client.ExecuteScalar(TestConnectionCommand));
 
                     return true;
@@ -353,93 +446,6 @@ namespace KpNet.Hosting
 
                 if (errorMessage != null && errorMessage.StartsWith(ErrorInQuery, StringComparison.OrdinalIgnoreCase))
                     throw new KdbPlusException(String.Format(CultureInfo.InvariantCulture, "Error occured during K+ query: '{0}'.", errorMessage.Replace(ErrorInQuery, String.Empty)));
-            }
-        }
-
-        private void KillProcessById(int id)
-        {
-            try
-            {
-                _logger.InfoFormat("Killing process {0}.", id);
-
-                ProcessHelper.KillProcesses(new[]{ id }, _processName);
-
-                _logger.InfoFormat("Successfully killed process {0}.", id);
-            }
-            catch (ProcessException exc)
-            {
-                _logger.ErrorFormat(exc, "Failed to kill process {0}.", id);
-            }
-        }
-
-        /// <summary>
-        /// Sets the port.
-        /// </summary>
-        /// <param name="port">The port.</param>
-        public override void SetPort(int port)
-        {
-            using (IDatabaseClient client = GetConnection())
-            {
-                _port = port;
-
-                UpdateSettingsStorage();
-
-                string command = string.Format(@"\p {0}", port);
-
-                client.ExecuteScalar(command);
-            }
-        }
-
-        private void UpdateSettingsStorage()
-        {
-            _storage.RemoveProcessId(_processKey);
-
-            _processKey = string.Format("{0}_{1}", _host, _port);
-
-            _storage.SetProcessId(_processKey, _id);
-        }
-
-        /// <summary>
-        /// Loads the directory.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        public override void LoadDirectory(string path)
-        {
-            Load(path);
-        }
-
-        /// <summary>
-        /// Loads the file.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        public override void LoadFile(string path)
-        {
-            Load(path);
-        }
-
-        private void Load(string path)
-        {
-            using (IDatabaseClient client = GetConnection())
-            {
-                string command = string.Format(@"\l {0}", path);
-
-                client.ExecuteScalar(command);
-            }            
-        }
-
-        private static void KillProcess(Process process)
-        {
-            if (process != null)
-            {
-                try
-                {
-                    process.Kill();
-                    process.WaitForExit(ProcessHelper.OneMinute);
-                }
-                catch (InvalidOperationException)
-                {
-                    // ignore exception if process was already killed
-                }
             }
         }
     }
