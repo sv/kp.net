@@ -273,14 +273,46 @@ namespace KpNet.Hosting
                 try
                 {
                     process.Exited -= ProcessExited;
-                    process.Kill();
-                    process.WaitForExit(ProcessHelper.OneMinute);
-                    ProcessExited(this, EventArgs.Empty);
+
+                    AskProcessToClose();
+
+                    const int tenSeconds = 10*1000;
+
+                    // if process has not terminated itself
+                    // kill it
+                    if (!process.WaitForExit(tenSeconds))
+                    {
+                        process.Kill();
+                        if(!process.WaitForExit(ProcessHelper.OneMinute))
+                            throw new KdbPlusFatalException(String.Format(Constants.DefaultCulture,"Failed to kill process {0}.", process.Id));
+
+                        ProcessExited(this, EventArgs.Empty);
+                    }
+
+                    process.Dispose();
                 }
                 catch (InvalidOperationException)
                 {
                     // ignore exception if process was already killed
                 }
+            }
+        }
+
+        private void AskProcessToClose()
+        {
+            if (_port <= 0)
+                return;
+
+            try
+            {
+                using (IDatabaseClient client = GetConnection())
+                {
+                    client.ExecuteScalar(@"\\");
+                }
+            }
+            catch (KdbPlusException)
+            {
+                // ignore the exception saying that connection was broken
             }
         }
 
@@ -305,7 +337,8 @@ namespace KpNet.Hosting
             {
                 _logger.InfoFormat("Killing process {0}.", id);
 
-                ProcessHelper.KillProcesses(new[] { id }, _processName);
+                if(id != NoProcessId)
+                    ProcessHelper.KillProcesses(new[] { id }, _processName);
 
                 _logger.InfoFormat("Successfully killed process {0}.", id);
             }
