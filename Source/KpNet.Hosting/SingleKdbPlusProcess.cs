@@ -285,10 +285,9 @@ namespace KpNet.Hosting
                         process.Kill();
                         if(!process.WaitForExit(ProcessHelper.OneMinute))
                             throw new KdbPlusFatalException(String.Format(Constants.DefaultCulture,"Failed to kill process {0}.", process.Id));
-
-                        ProcessExited(this, EventArgs.Empty);
                     }
 
+                    ProcessExited(this, EventArgs.Empty);
                     process.Dispose();
                 }
                 catch (InvalidOperationException)
