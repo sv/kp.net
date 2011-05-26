@@ -185,6 +185,7 @@ namespace KpNet.Hosting
             lock (_locker)
             {
                 KillProcess(_process);
+                _process = null;
             }
         }
 
