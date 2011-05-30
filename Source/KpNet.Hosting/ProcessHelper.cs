@@ -28,13 +28,14 @@ namespace KpNet.Hosting
         public static Process StartNewProcess(string processName, string workerDirectory, string commandLine, string title, bool hideWindow)
         {
             Process kdbProc = new Process
-            {
-                StartInfo =
-                {
-                    FileName = processName,
-                    WorkingDirectory = Path.GetFullPath(workerDirectory),
-                    Arguments = commandLine,                    
-                }
+                                  {
+                                      StartInfo =
+                                          {
+                                              FileName = processName,
+                                              WorkingDirectory = Path.GetFullPath(workerDirectory),
+                                              Arguments = commandLine,
+                                              UseShellExecute = false,
+                                           }
             };
 
             try
