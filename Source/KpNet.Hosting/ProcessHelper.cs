@@ -24,8 +24,10 @@ namespace KpNet.Hosting
         /// <param name="workerDirectory">The worker directory.</param>
         /// <param name="commandLine">The command line.</param>
         /// <param name="title">The title.</param>
+        /// <param name="hideWindow">To hide window or not</param>
+        /// <param name="useShellExecute">To use shellExecute when starting the process</param>
         /// <returns>The id of the created process.</returns>
-        public static Process StartNewProcess(string processName, string workerDirectory, string commandLine, string title, bool hideWindow)
+        public static Process StartNewProcess(string processName, string workerDirectory, string commandLine, string title, bool hideWindow, bool useShellExecute)
         {
             Process kdbProc = new Process
                                   {
@@ -34,17 +36,13 @@ namespace KpNet.Hosting
                                               FileName = processName,
                                               WorkingDirectory = Path.GetFullPath(workerDirectory),
                                               Arguments = commandLine,
-                                              UseShellExecute = false,
+                                              UseShellExecute = useShellExecute,
+                                              CreateNoWindow = hideWindow
                                            }
             };
 
             try
             {
-                if (hideWindow)
-                {
-                    kdbProc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                }
-
                 kdbProc.EnableRaisingEvents = true;
 
                 kdbProc.Start();

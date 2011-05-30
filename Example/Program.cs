@@ -13,7 +13,7 @@ namespace Example
         {
             //1. download trial kdb+ here http://kx.com/Developers/software.php
             // there should be path to q process in the path env variable
-            KdbPlusProcess process = KdbPlusProcess.Builder.StartNew();            
+            KdbPlusProcess process = KdbPlusProcess.Builder.UseShellExecute().StartNew();            
 
             try
             {

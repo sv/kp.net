@@ -30,6 +30,7 @@ namespace KpNet.Hosting
         private bool _multiThreadingEnabled;
         private bool _hideWindow;
         private TimeSpan _waitForPortTimeout;
+        private bool _useShellExecute;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KdbPlusProcessBuilder"/> class.
@@ -94,6 +95,17 @@ namespace KpNet.Hosting
         public KdbPlusProcessBuilder HideWindow()
         {
             _hideWindow = true;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Turns on the use of shellexecute when starting the process
+        /// </summary>
+        /// <returns></returns>
+        public KdbPlusProcessBuilder UseShellExecute()
+        {
+            _useShellExecute = true;
 
             return this;
         }
@@ -365,7 +377,7 @@ namespace KpNet.Hosting
 
             SingleKdbPlusProcess process = new SingleKdbPlusProcess(_processName, _host, Port, GetCommandLine(Port),
                                             _processTitle, _workingDirectory, _logger,
-                                            _settingsStorage, _preStartCommands, _setupCommands, _hideWindow, _waitForPortTimeout);
+                                            _settingsStorage, _preStartCommands, _setupCommands, _hideWindow, _waitForPortTimeout, _useShellExecute);
 
             process.Start();
 
@@ -378,7 +390,7 @@ namespace KpNet.Hosting
 
             SingleKdbPlusProcess process = new SingleKdbPlusProcess(_processName, _host, Port, GetCommandLine(Port),
                                             _processTitle, _workingDirectory, _logger,
-                                            _settingsStorage, _preStartCommands, _setupCommands, _hideWindow, _waitForPortTimeout);
+                                            _settingsStorage, _preStartCommands, _setupCommands, _hideWindow, _waitForPortTimeout, _useShellExecute);
 
             process.OpenExisting();
 
@@ -399,7 +411,7 @@ namespace KpNet.Hosting
                 int port = Port + i;
                 processes.Add(new SingleKdbPlusProcess(_processName, _host, port, GetCommandLine(port),
                                             string.Format("{0}_{1}", _processTitle, port), _workingDirectory, _logger,
-                                            _settingsStorage, _preStartCommands, _setupCommands, _hideWindow, _waitForPortTimeout));
+                                            _settingsStorage, _preStartCommands, _setupCommands, _hideWindow, _waitForPortTimeout, _useShellExecute));
             }
 
             CompositeKdbPlusProcess result = new CompositeKdbPlusProcess(processes);
