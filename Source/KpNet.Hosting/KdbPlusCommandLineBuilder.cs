@@ -132,17 +132,17 @@ namespace KpNet.Hosting
 
             if(!string.IsNullOrWhiteSpace(_log))
             {
-                builder.AppendFormat(_syncLoggingEnabled ? "{0} -L " : "{0} -l ", _log);
+                builder.AppendFormat(_syncLoggingEnabled ? " {0} -L" : " {0} -l", _log);
             }
 
             if(_port.HasValue)
             {
-                builder.AppendFormat(_multiThreadingEnabled ? "-p -{0} " : "-p {0} ", _port.Value);
+                builder.AppendFormat(_multiThreadingEnabled ? " -p -{0}" : " -p {0}", _port.Value);
             }
 
             if(_threadCount.HasValue)
             {
-                builder.AppendFormat("-s {0} ", _threadCount.Value);
+                builder.AppendFormat(" -s {0}", _threadCount.Value);
             }
 
             if(_commandLineArguments != null && _commandLineArguments.Count > 0)
