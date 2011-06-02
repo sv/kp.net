@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
 
 namespace KpNet.Hosting
 {
@@ -9,6 +10,8 @@ namespace KpNet.Hosting
         private string _log;
         private bool _syncLoggingEnabled;
         private bool _multiThreadingEnabled;
+        private string _startupScript;
+        private List<string> _commandLineArguments;
 
         /// <summary>
         /// Enables the sync logging.
@@ -97,12 +100,35 @@ namespace KpNet.Hosting
         }
 
         /// <summary>
+        /// Sets the startup script.
+        /// </summary>
+        /// <param name="scriptFileName">Name of the script file.</param>
+        /// <returns></returns>
+        public KdbPlusCommandLineBuilder SetStartupScript(string scriptFileName)
+        {
+            _startupScript = scriptFileName;
+
+            return this;
+        }
+
+        public KdbPlusCommandLineBuilder SetCommandLineArguments(List<string> arguments)
+        {
+            _commandLineArguments = arguments;
+            return this;
+        }
+
+        /// <summary>
         /// Creates new command line.
         /// </summary>
         /// <returns>New command line.</returns>
         public string CreateNew()
         {
             StringBuilder builder = new StringBuilder();
+
+            if(!string.IsNullOrEmpty(_startupScript))
+            {
+                builder.AppendFormat(" {0}", _startupScript);
+            }
 
             if(!string.IsNullOrWhiteSpace(_log))
             {
@@ -117,6 +143,14 @@ namespace KpNet.Hosting
             if(_threadCount.HasValue)
             {
                 builder.AppendFormat("-s {0} ", _threadCount.Value);
+            }
+
+            if(_commandLineArguments != null && _commandLineArguments.Count > 0)
+            {
+                foreach (string argument in _commandLineArguments)
+                {
+                    builder.AppendFormat(" {0}", argument);
+                }
             }
 
             return builder.ToString();

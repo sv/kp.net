@@ -31,6 +31,8 @@ namespace KpNet.Hosting
         private bool _hideWindow;
         private TimeSpan _waitForPortTimeout;
         private bool _useShellExecute;
+        private string _startupScript;
+        private List<string> _commandLineArguments = new List<string>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KdbPlusProcessBuilder"/> class.
@@ -333,6 +335,34 @@ namespace KpNet.Hosting
         }
 
         /// <summary>
+        /// Sets the startup script.
+        /// </summary>
+        /// <param name="scriptFileName">Name of the script file.</param>
+        /// <returns></returns>
+        public KdbPlusProcessBuilder SetStartupScript(string scriptFileName)
+        {
+            ThrowExceptionfIfProcessCreated();
+
+            _startupScript = scriptFileName;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds the command line argument for starting kdb+ process.
+        /// </summary>
+        /// <param name="argument">The argument.</param>
+        /// <returns></returns>
+        public KdbPlusProcessBuilder AddCommandLineArgument(string argument)
+        {
+            ThrowExceptionfIfProcessCreated();
+
+            _commandLineArguments.Add(argument);
+
+            return this;
+        }
+
+        /// <summary>
         /// Sets the wait for port timeout.
         /// </summary>
         /// <param name="timeout">The timeout.</param>
@@ -435,7 +465,13 @@ namespace KpNet.Hosting
                 builder.EnableMultiThreading();
             }
 
-            return builder.SetLog(_kdbLog).SetPort(port).SetThreadCount(_threadCount).CreateNew();
+            return builder
+                .SetStartupScript(_startupScript)
+                .SetLog(_kdbLog)
+                .SetPort(port)
+                .SetThreadCount(_threadCount)
+                .SetCommandLineArguments(_commandLineArguments)
+                .CreateNew();
         }
 
         private void ThrowExceptionfIfProcessCreated()
