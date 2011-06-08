@@ -81,17 +81,17 @@ namespace KpNet.KdbPlusClient
         /// <value>
         /// 	<c>true</c> if this instance is connected; otherwise, <c>false</c>.
         /// </value>
-        public override bool IsConnected
+        public override bool CanBeReused
         {
             get
             {
                 ThrowIfDisposed();
-                return _innerClient.IsConnected;
+                return _innerClient.CanBeReused;
             }
             set
             {
                 ThrowIfDisposed();
-                _innerClient.IsConnected = value;
+                _innerClient.CanBeReused = value;
             }
         }
 

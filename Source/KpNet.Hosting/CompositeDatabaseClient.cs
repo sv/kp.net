@@ -120,13 +120,13 @@ namespace KpNet.Hosting
         /// <value>
         /// 	<c>true</c> if this instance is connected; otherwise, <c>false</c>.
         /// </value>
-        public bool IsConnected
+        public bool CanBeReused
         {
             get
             {
                 foreach (IDatabaseClient client in _innerClients)
                 {
-                    if (!client.IsConnected) return false;
+                    if (!client.CanBeReused) return false;
                 }
 
                 return true;
@@ -135,7 +135,7 @@ namespace KpNet.Hosting
             {
                 foreach (IDatabaseClient client in _innerClients)
                 {
-                    client.IsConnected=value;
+                    client.CanBeReused=value;
                 }
             }
         }

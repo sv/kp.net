@@ -35,12 +35,12 @@ namespace KpNet.KdbPlusClient
 
 
         /// <summary>
-        /// Gets a value indicating whether this instance is connected.
+        /// Gets a value indicating whether this instance is connected and can be safely reused.
         /// </summary>
         /// <value>
         /// 	<c>true</c> if this instance is connected; otherwise, <c>false</c>.
         /// </value>
-        bool IsConnected
+        bool CanBeReused
         {
             get; set; }
 

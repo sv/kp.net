@@ -185,7 +185,7 @@ namespace KpNet.KdbPlusClient
             {
                 foreach (NonPooledKdbPlusDatabaseClient connection in _createdConnections)
                 {
-                    connection.IsConnected = false;
+                    connection.CanBeReused = false;
                 }
             }
         }
@@ -237,7 +237,7 @@ namespace KpNet.KdbPlusClient
         private bool ConnectionShouldBeDisposed(KdbPlusDatabaseClient connection)
         {
             // dispose connection if it's broken
-            if(!connection.IsConnected)
+            if(!connection.CanBeReused)
                 return true;
 
             return _loadBalanceTimeout > 0 && (DateTime.Now - connection.Created).TotalSeconds > _loadBalanceTimeout;
