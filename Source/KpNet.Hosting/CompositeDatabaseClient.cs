@@ -131,6 +131,13 @@ namespace KpNet.Hosting
 
                 return true;
             }
+            set
+            {
+                foreach (IDatabaseClient client in _innerClients)
+                {
+                    client.IsConnected=value;
+                }
+            }
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 using KpNet.Hosting;
 using KpNet.KdbPlusClient;
 
@@ -13,22 +14,150 @@ namespace Example
         {
             //1. download trial kdb+ here http://kx.com/Developers/software.php
             // there should be path to q process in the path env variable
-            KdbPlusProcess process = KdbPlusProcess.Builder.UseShellExecute().StartNew();            
+
 
             try
             {
-                // Simplified API
-                RunSimplifiedAPIExample();
+                using(IDatabaseClient client = KdbPlusDatabaseClient.Factory.CreateNonPooledClient(new KdbPlusConnectionStringBuilder(){Server = "localhost",Port = 1003}))
+                {
+                    client.ExecuteScalar("0");
+                    Console.WriteLine("Successful ping 1003");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            //Console.WriteLine("Shellexecute");
 
-                // Implicit connection pooling
-                RunSimplifiedConnectionPoolingExample();
+            //for (int iteration = 0; iteration < 100; iteration++)
+            //{
+            //    try
+            //    {
+            //        Console.WriteLine("Iteration {0}", iteration);
+            //        KdbPlusProcess process = KdbPlusProcess.Builder.
+            //            SetPort(1002)
+            //            .SetWorkingDirectory(@"d:\kdbl\scripts").EnableMultiThreading()
+            //            //.AddSetupCommand(SetupCommand)
+            //            .UseShellExecute()
+            //            .StartNew();
 
-                // ADO.Net provider
-                RunADONetExample();
+            //        Query(process);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Console.WriteLine(ex);
+            //    }
+                    
+            //}
+            
+            
+
+            
+            //    Console.WriteLine("Without Shellexecute");
+            //    for (int iteration = 0; iteration < 100; iteration++)
+            //    {
+            //        try
+            //        {
+            //            Console.WriteLine("Iteration {0}", iteration);
+            //            KdbPlusProcess process = KdbPlusProcess.Builder
+            //                .SetPort(1003)
+            //                .SetWorkingDirectory(@"d:\kdbl\scripts").EnableMultiThreading()
+            //                //.AddSetupCommand(SetupCommand)
+            //                .HideWindow().StartNew();
+
+            //            Query(process);
+
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            Console.WriteLine(ex);
+            //        }
+            //    }
+            
+
+            //Console.ReadLine();
+
+            //try
+            //{
+            //    // Simplified API
+            //    RunSimplifiedAPIExample();
+
+            //    // Implicit connection pooling
+            //    RunSimplifiedConnectionPoolingExample();
+
+            //    // ADO.Net provider
+            //    RunADONetExample();
+            //}
+            //finally
+            //{
+            //    if(process.IsAlive)
+            //        process.Kill();
+            //}
+        }
+
+        private static void SetupCommand(IDatabaseClient client)
+        {
+            using (client)
+            {
+                client.ReceiveTimeout = TimeSpan.FromHours(1);
+
+                // load script with functions into kdb+
+                const string preloadScript = "\\l startup_kiwi.q";
+                Console.WriteLine("Executing: {0}.", preloadScript);
+
+                client.ExecuteNonQuery(preloadScript);
+
+                // call init function to load db and all scripts
+                string command = String.Format(CultureInfo.InvariantCulture,
+                     ".kiwi.init[`{0};`{1};{2}]",
+                    CorrectPath(@"D:\kdbl\db_a"), // db location
+                    CorrectPath(@"d:\kdbl\scripts"), // path to scripts
+                    1, // preload consensus into memory
+                    1, // load pva script
+                    0); // load ibes scripts
+
+                Console.WriteLine("Executing: {0}.", command);
+
+                client.ExecuteNonQuery(command);
+
+                // change port to negative to start multithreading
+                string mtCommand = String.Format(CultureInfo.InvariantCulture, @"\p -{0}", client.Port);
+                Console.WriteLine("Executing: {0}.", mtCommand);
+                client.ExecuteNonQuery(mtCommand);
+            }
+        }
+
+        // correct path for kdb+ process - replace \ to /
+        private static string CorrectPath(string path)
+        {
+            const string invalidSeparator = "\\";
+            const string validSeparator = "/";
+
+            path = path.Trim().Replace(invalidSeparator, validSeparator);
+            if (path.EndsWith(validSeparator, StringComparison.OrdinalIgnoreCase))
+                path = path.Substring(0, path.Length - 1);
+
+            return path;
+        }
+
+        private static void Query(KdbPlusProcess process)
+        {
+            try
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    using (IDatabaseClient client = process.GetConnection())
+                    {
+                        client.SendTimeout = TimeSpan.FromSeconds(10);
+                        client.ReceiveTimeout = TimeSpan.FromMinutes(1);
+                        client.ExecuteScalar("while[1; ]");
+                    }
+                }
             }
             finally
             {
-                if(process.IsAlive)
+                if (process.IsAlive)
                     process.Kill();
             }
         }
