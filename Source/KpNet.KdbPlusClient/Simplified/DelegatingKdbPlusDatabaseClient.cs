@@ -88,7 +88,7 @@ namespace KpNet.KdbPlusClient
                 ThrowIfDisposed();
                 return _innerClient.IsConnected;
             }
-            internal set
+            set
             {
                 ThrowIfDisposed();
                 _innerClient.IsConnected = value;

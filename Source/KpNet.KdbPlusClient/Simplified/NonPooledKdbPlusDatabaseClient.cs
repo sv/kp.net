@@ -329,7 +329,7 @@ namespace KpNet.KdbPlusClient
         public override bool IsConnected
         {
             get { return _canBeReused && !IsDisposed && _client.Connected; }
-            internal set { _canBeReused = value; }
+            set { _canBeReused = value; }
         }
 
         /// <summary>

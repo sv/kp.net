@@ -41,8 +41,8 @@ namespace KpNet.KdbPlusClient
         /// 	<c>true</c> if this instance is connected; otherwise, <c>false</c>.
         /// </value>
         bool IsConnected
-        { get;
-        }
+        {
+            get; set; }
 
         /// <summary>
         /// Executes the query and returns the result.
