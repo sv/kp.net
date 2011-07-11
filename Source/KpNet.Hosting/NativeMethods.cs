@@ -13,7 +13,7 @@ namespace KpNet.Hosting
         private const uint CREATE_NO_WINDOW = 0x08000000;
         private const uint CREATE_SUSPENDED = 0x00000004;
 
-        internal struct PROCESS_INFORMATION
+        private struct PROCESS_INFORMATION
         {
             public IntPtr hProcess;
             public IntPtr hThread;
@@ -21,7 +21,7 @@ namespace KpNet.Hosting
             public uint dwThreadId;
         }
 
-        internal struct STARTUPINFO
+        private struct STARTUPINFO
         {
             public uint cb;
             public string lpReserved;
@@ -43,23 +43,16 @@ namespace KpNet.Hosting
             public IntPtr hStdError;
         }
 
-        internal struct SECURITY_ATTRIBUTES
-        {
-            public int length;
-            public IntPtr lpSecurityDescriptor;
-            public bool bInheritHandle;
-        }
-        
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        static extern void SetWindowText(IntPtr hWnd, string lpString);
+        private static extern void SetWindowText(IntPtr hWnd, string lpString);
 
         [DllImport("kernel32.dll")]
-        static extern bool CreateProcess(string lpApplicationName, string lpCommandLine, IntPtr lpProcessAttributes, IntPtr lpThreadAttributes,
+        private static extern bool CreateProcess(string lpApplicationName, string lpCommandLine, IntPtr lpProcessAttributes, IntPtr lpThreadAttributes,
                                 bool bInheritHandles, uint dwCreationFlags, IntPtr lpEnvironment,
                                 string lpCurrentDirectory, ref STARTUPINFO lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation);
 
         [DllImport("kernel32.dll")]
-        static extern uint ResumeThread(IntPtr hThread);
+        private static extern uint ResumeThread(IntPtr hThread);
 
         #endregion
 
