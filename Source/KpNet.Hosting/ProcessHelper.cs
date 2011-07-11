@@ -168,6 +168,9 @@ namespace KpNet.Hosting
 
             try
             {
+                if (useShellExecute && hideWindow)
+                    kdbProc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+
                 kdbProc.EnableRaisingEvents = true;
 
                 kdbProc.Start();
