@@ -40,6 +40,7 @@ namespace KpNet.Hosting
 
         private readonly TimeSpan _waitForPortTimeout;
         private readonly bool _useShellExecute;
+        private int _numberOfCoresToUse;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SingleKdbPlusProcess"/> class.
@@ -57,13 +58,14 @@ namespace KpNet.Hosting
         /// <param name="hideWindow">if set to <c>true</c> [hide window].</param>
         /// <param name="waitForPortTimeOut">The wait for port time out.</param>
         /// <param name="useShellExecute">Use ShellExecute when starting the process</param>
+        /// <param name="numberOfCoresToUse">Number of cores for process to use. 0 if there is no limit</param>
         public SingleKdbPlusProcess(string processName, string host, 
                                     int port, string commandLine, string processTitle,
                                     string workingDirectory, ILogger logger, 
                                     ISettingsStorage storage,
                                     List<Action> preStartCommands,
                                     List<Action<IDatabaseClient>> setupCommands, bool hideWindow,
-                                    TimeSpan waitForPortTimeOut, bool useShellExecute)
+                                    TimeSpan waitForPortTimeOut, bool useShellExecute, int numberOfCoresToUse)
         {
             Guard.ThrowIfNull(logger, "logger");
             Guard.ThrowIfNull(storage, "storage");
@@ -99,6 +101,8 @@ namespace KpNet.Hosting
 
             _waitForPortTimeout = waitForPortTimeOut;
             _useShellExecute = useShellExecute;
+
+            _numberOfCoresToUse = numberOfCoresToUse;
         }
 
         /// <summary>
@@ -404,7 +408,7 @@ namespace KpNet.Hosting
 
         private Process StartNewProcess(string commandArgs)
         {
-            return ProcessHelper.StartNewProcess(_processName, _workingDirectory, commandArgs, _processTitle, _hideWindow, _useShellExecute);
+            return ProcessHelper.StartNewProcess(_processName, _workingDirectory, commandArgs, _processTitle, _hideWindow, _useShellExecute, _numberOfCoresToUse);
         }
 
         private Process OpenExistingProcess()

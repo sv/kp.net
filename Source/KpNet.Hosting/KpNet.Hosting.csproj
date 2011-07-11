@@ -48,6 +48,7 @@
     <Compile Include="KdbPlusCommandLineBuilder.cs" />
     <Compile Include="KdbPlusProcess.cs" />
     <Compile Include="KdbPlusProcessBuilder.cs" />
+    <Compile Include="NativeMethods.cs" />
     <Compile Include="NullSettingsStorage.cs" />
     <Compile Include="ProcessAlreadyCreatedException.cs" />
     <Compile Include="ProcessException.cs" />

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace KpNet.Hosting
@@ -14,9 +13,6 @@ namespace KpNet.Hosting
     {
         public const int OneMinute = 60 * 1000;
 
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        internal static extern void SetWindowText(IntPtr hWnd, string lpString);
-
         /// <summary>
         /// Starts the new process.
         /// </summary>
@@ -26,37 +22,17 @@ namespace KpNet.Hosting
         /// <param name="title">The title.</param>
         /// <param name="hideWindow">To hide window or not</param>
         /// <param name="useShellExecute">To use shellExecute when starting the process</param>
+        /// <param name="numberOfCoresToUse">Number of cores for process to use. 0 if there is no limit</param>
         /// <returns>The id of the created process.</returns>
-        public static Process StartNewProcess(string processName, string workerDirectory, string commandLine, string title, bool hideWindow, bool useShellExecute)
+        public static Process StartNewProcess(string processName, string workerDirectory, string commandLine, string title, bool hideWindow, bool useShellExecute, int numberOfCoresToUse)
         {
-            Process kdbProc = new Process
-                                  {
-                                      StartInfo =
-                                          {
-                                              FileName = processName,
-                                              WorkingDirectory = Path.GetFullPath(workerDirectory),
-                                              Arguments = commandLine,
-                                              UseShellExecute = useShellExecute,
-                                              CreateNoWindow = hideWindow
-                                           }
-            };
+            if (numberOfCoresToUse < 0)
+                throw new ArgumentException("Invalid number of cores");
 
-            try
-            {
-                kdbProc.EnableRaisingEvents = true;
+            if (numberOfCoresToUse >= Environment.ProcessorCount)
+                numberOfCoresToUse = 0;
 
-                kdbProc.Start();
-            }
-            catch (ProcessException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw new ProcessException(
-                    String.Format(Constants.DefaultCulture, "Cannot start process {0} {1}.", processName,
-                                  commandLine), ex);
-            }
+            Process kdbProc = numberOfCoresToUse == 0 ? StartProcess(processName, workerDirectory, commandLine, useShellExecute, hideWindow) : StartProcessWithAffinity(processName, workerDirectory, commandLine, hideWindow, numberOfCoresToUse);
 
             Thread.Sleep(300);
 
@@ -65,11 +41,12 @@ namespace KpNet.Hosting
                                                          "Cannot start process {0} {1}. Process exited.",
                                                          processName, commandLine));
 
-            SetWindowText(kdbProc.MainWindowHandle, title);
-
+            if(!hideWindow)
+                NativeMethods.SetWindowText(kdbProc, title);
+            
             return kdbProc;
         }
-
+        
         /// <summary>
         /// Kills the processes.
         /// </summary>
@@ -158,6 +135,54 @@ namespace KpNet.Hosting
             }
 
             throw new ProcessException(string.Format("Could not find existing Kdb+ process. Name: {0}. Id: {1}.", processName, id));
+        }
+
+        private static Process StartProcessWithAffinity(string processName, string workerDirectory, string commandLine, bool hideWindow, int numberOfCoresToUse)
+        {
+            try
+            {
+                return NativeMethods.CreateProcessWithAffinity(processName, workerDirectory, commandLine, hideWindow,
+                                                               numberOfCoresToUse);
+            }
+            catch (Exception ex)
+            {
+                throw new ProcessException(
+                    String.Format(Constants.DefaultCulture, "Cannot start process {0} {1}.", processName,
+                                  commandLine), ex);
+            }
+        }
+
+        private static Process StartProcess(string processName, string workerDirectory, string commandLine, bool useShellExecute, bool hideWindow)
+        {
+            Process kdbProc = new Process
+            {
+                StartInfo =
+                {
+                    FileName = processName,
+                    WorkingDirectory = Path.GetFullPath(workerDirectory),
+                    Arguments = commandLine,
+                    UseShellExecute = useShellExecute,
+                    CreateNoWindow = hideWindow
+                }
+            };
+
+            try
+            {
+                kdbProc.EnableRaisingEvents = true;
+
+                kdbProc.Start();
+            }
+            catch (ProcessException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new ProcessException(
+                    String.Format(Constants.DefaultCulture, "Cannot start process {0} {1}.", processName,
+                                  commandLine), ex);
+            }
+            return kdbProc;
         }
     }
 }
