@@ -40,7 +40,7 @@ namespace KpNet.Hosting
 
         private readonly TimeSpan _waitForPortTimeout;
         private readonly bool _useShellExecute;
-        private int _numberOfCoresToUse;
+        private readonly int _numberOfCoresToUse;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SingleKdbPlusProcess"/> class.
@@ -278,30 +278,43 @@ namespace KpNet.Hosting
         {
             if (process != null)
             {
-                try
+                process.Exited -= ProcessExited;
+
+                // ask process to close gracefully
+                // by tcp
+                AskProcessToClose();
+
+                const int tenSeconds = 10*1000;
+
+                int attempt = 0;
+                const int maxAttempts = 5;
+
+                // if process has not terminated itself
+                // kill it
+                while (!process.WaitForExit(tenSeconds))
                 {
-                    process.Exited -= ProcessExited;
-
-                    AskProcessToClose();
-
-                    const int tenSeconds = 10*1000;
-
-                    // if process has not terminated itself
-                    // kill it
-                    if (!process.WaitForExit(tenSeconds))
+                    try
                     {
+                        attempt++;
                         process.Kill();
-                        if(!process.WaitForExit(ProcessHelper.OneMinute))
-                            throw new KdbPlusFatalException(String.Format(Constants.DefaultCulture,"Failed to kill process {0}.", process.Id));
+                        if (!process.WaitForExit(ProcessHelper.OneMinute))
+                            throw new KdbPlusFatalException(String.Format(Constants.DefaultCulture, "Failed to kill process {0}.", process.Id));
                     }
+                    catch (InvalidOperationException)
+                    {
+                        // ignore exception if process was already killed
+                    }
+                    catch (Exception)
+                    {
+                        // if there is any other exception
+                        // do retry
+                        if(attempt >= maxAttempts)
+                            throw;
+                    }
+                }
 
-                    ProcessExited(this, EventArgs.Empty);
-                    process.Dispose();
-                }
-                catch (InvalidOperationException)
-                {
-                    // ignore exception if process was already killed
-                }
+                ProcessExited(this, EventArgs.Empty);
+                process.Dispose();
             }
         }
 
