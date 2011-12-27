@@ -41,6 +41,7 @@ namespace KpNet.Hosting
         private readonly TimeSpan _waitForPortTimeout;
         private readonly bool _useShellExecute;
         private readonly int _numberOfCoresToUse;
+        private static readonly int FifteenMinutes = 15*60*1000;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SingleKdbPlusProcess"/> class.
@@ -284,25 +285,31 @@ namespace KpNet.Hosting
                 // by tcp
                 AskProcessToClose();
 
-                const int tenSeconds = 10*1000;
+                const int fifteenSeconds = 15*1000;
 
                 int attempt = 0;
-                const int maxAttempts = 5;
+
+                // try 15 minutes to kill process and wait for it to close
+                const int maxAttempts = 4*15;
 
                 // if process has not terminated itself
                 // kill it
-                while (!process.WaitForExit(tenSeconds))
+                while (!process.WaitForExit(fifteenSeconds))
                 {
                     try
                     {
                         attempt++;
                         process.Kill();
-                        if (!process.WaitForExit(ProcessHelper.OneMinute))
+                        if (!process.WaitForExit(FifteenMinutes))
                             throw new KdbPlusFatalException(String.Format(Constants.DefaultCulture, "Failed to kill process {0}.", process.Id));
                     }
                     catch (InvalidOperationException)
                     {
-                        // ignore exception if process was already killed
+                        if (process.HasExited)
+                            break;
+                        
+                        if (attempt >= maxAttempts)
+                            throw;
                     }
                     catch (Exception)
                     {
